@@ -6,6 +6,7 @@
 #include "Hill/HillProblem.hpp"
 #include <functional>
 #include <fstream>
+#include <random>
 
 using namespace std;
 
@@ -14,8 +15,15 @@ double CalcEnergy(const double x) {
     return sin(x);
 }
 
+//double rnd() {
+//    return static_cast<double>(std::rand()) / RAND_MAX;
+//}
+
+
 double rnd() {
-    return static_cast<double>(std::rand()) / RAND_MAX;
+    static std::mt19937 gen(std::random_device{}());
+    static std::uniform_real_distribution<double> dist(0.0, 1.0);
+    return dist(gen);
 }
 
 double SA(double a, double b, unsigned k_max, std::function<double(const double x)> CalcEnergy) { /// a, b, temp, k_max
@@ -25,8 +33,13 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
     unsigned k = 0;
     double x = (b - a) / 2; // ответ
     double temp = 400.0; //  температура
+    unsigned stuck_count = 0;
         
     while (k <= k_max) {
+        if (stuck_count > 10) {
+            temp *= 100;
+            stuck_count /= 2;
+        }
         temp *= 0.9995;
         double x_old = x;
         double x_new = x + (rnd() > 0.5 ? 1.0 : -1.0) * temp * 0.001;
@@ -39,10 +52,14 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         double e_old = CalcEnergy(x_old);
         double e_new = CalcEnergy(x_new);
 
-        if ((e_old > e_new) || (exp((e_new - e_old) / temp) > rnd()))
+        if ((e_old > e_new) || (exp((e_new - e_old) / temp) > rnd())) {
             x = x_new;
-        else
+            stuck_count = 0;
+        }   
+        else {
             x = x_old;
+            stuck_count++;
+        }
         k += 1;
     }
     //cout << x << endl;
@@ -71,6 +88,7 @@ int main_MY() {
 
 int main() {
     const size_t N = 10;
+    double dif = 0.0;
     // 15
     std::srand(std::time({0}));
     THillProblem a = THillProblem(15);
@@ -91,12 +109,14 @@ int main() {
                 ans = x;
         }
    
+        dif += fabs(EnergyCalc(ans) - a.GetOptimumValue());
         cout << "SA point: " << ans << " " << EnergyCalc( ans ) << endl;
         cout << "Exact point: " << a.GetOptimumPoint()[0] << " " << a.GetOptimumValue() << endl;
         if (a.GetMaxPoint().size() > 1) cout << "something wrong..";
 
         cout << "\n\n\n";
     }
+    cout << dif / double(N) << endl;
 
     return 0;
 }
