@@ -124,14 +124,16 @@ int task_run(int task_num) {
 
     double tmp_ans = 0.0, ans = 0.0;
     for (size_t i = 0; i < N; i++) {
-        tmp_ans = SA(low_bounds[0], upper_bounds[0], 1000, EnergyCalc);
+        tmp_ans = SA(low_bounds[0], upper_bounds[0], 5000, EnergyCalc);
         if (EnergyCalc(tmp_ans) < EnergyCalc(ans))
             ans = tmp_ans;
     }
    
     dif = fabs(EnergyCalc(ans) - task.GetOptimumValue());
     
-    std::cout << task_num << "  " << EnergyCalc(ans) << "  " << task.GetOptimumValue() << "  " << dif << std::endl;
+    //std::cout << task_num << "  " << EnergyCalc(ans) << "  " << task.GetOptimumValue() << "  " << dif << std::endl;
+    std::cout << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << std::endl;
+
     return dif;
 }
 
@@ -152,6 +154,7 @@ int main_plot() {
 }
 
 int main() {
+
     for (size_t i = 0; i < 1000; i++)
         task_run(i);
 
