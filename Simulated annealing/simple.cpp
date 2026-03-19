@@ -2,18 +2,15 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
-
-#include "Hill/HillProblem.hpp"
 #include <functional>
 #include <fstream>
 #include <random>
 
+#include "Hill/HillProblem.hpp"
+
+
 using namespace std;
 
-
-double CalcEnergy(const double x) {
-    return sin(x);
-}
 
 //double rnd() {
 //    return static_cast<double>(std::rand()) / RAND_MAX;
@@ -26,92 +23,81 @@ double rnd() {
     return dist(gen);
 }
 
-double estimateInitialTemp(
-    std::function<double(const double)> E,
-    int samples = 1000)
-{
-    double x = 0.5;
+double estimateInitialTemp(std::function<double(const double)> E, int samples = 1000) {
+    double x = rnd(); ///!hardcode
     double sum = 0;
     int count = 0;
-
-    for (int i = 0; i < samples; ++i)
-    {
-        double x_new = x + rnd();
-        double dE = E(x_new) - E(x);
+    double ans = E(x);
+    for (int i = 0; i < samples; ++i) {
+        double x_new = x + rnd(); ///!hardcode
+        double e_new = E(x_new);
+        ans = min(ans, e_new);
+        double dE = e_new - E(x);
 
         if (dE > 0) {
             sum += dE;
             count++;
         }
-
         x = x_new;
     }
-
     double avg_dE = sum / count;
-
     double P0 = 0.8;
+    
     return -avg_dE / log(P0);
 }
 
 double SA(double a, double b, unsigned k_max, std::function<double(const double x)> CalcEnergy) { /// a, b, temp, k_max
     unsigned k = 0;
-    double x = a + rnd() * (b - a); // ответ
-    double temp = 10.0; //  температура
+    double x = a + rnd() * (b - a);
+    double temp = estimateInitialTemp(CalcEnergy); 
     unsigned stuck_count = 0;
         
     while (k <= k_max) {
         if (stuck_count > 20) {
-            temp *= 100;
-            stuck_count /= 2;
+            temp *= 1.5;
+            stuck_count = 0;
         }
-        temp *= 0.9995;
+        temp *= 0.995;
         double x_old = x;
-        double x_new = x + (rnd() > 0.5 ? 1.0 : -1.0) * 0.1 * sqrt(sqrt(temp));
+        double x_new =1 * rnd();
 
 
         if (x_new < a)
             x_new = a + (a - x_new);
         if (x_new > b)
             x_new = b - (x_new - b);
-        x_new = max(a, min(b, x_new));
+        //x_new = max(a, min(b, x_new));
         double e_old = CalcEnergy(x_old);
         double e_new = CalcEnergy(x_new);
+        
 
-        if ((e_old > e_new) || (exp((e_new - e_old) / temp) > rnd())) {
+        if (e_old > e_new)  {
             x = x_new;
             stuck_count = 0;
-        }   
-        else {
-            x = x_old;
-            stuck_count++;
         }
+
+        double dE = e_old - e_new;
+        double dET = (e_old - e_new) / temp;
+        double Pexp = (exp((e_old - e_new) / temp));
+        double ran = rnd();
+       if (e_old <= e_new) {
+            if (exp((e_old - e_new) / temp) > ran) {
+                x = x_new;
+                stuck_count = 0;
+            }
+            else {
+                x = x_old;
+                stuck_count++;
+            }
+       }
         k += 1;
     }
     return x;
 }
    
-int main_MY() {
-    size_t N = 1000;
 
-    std::srand(std::time({0}));
-    double tmp = 0.0, ans = -10.0;
-    for (size_t i = 0; i < N; i++) {
-        tmp = SA(-10, 10, 10000, CalcEnergy);
-        if (CalcEnergy(tmp) < CalcEnergy(ans))
-            ans = tmp;
-    }
-    cout << "\n\n";
-    cout << "x: " << ans << "  Max energy: " << CalcEnergy(ans);
-    cout << "\n\n\n";
-    cout << 3.14 / 2.0 << endl;
-    cout << 3.14 / 2.0 * 5.0 << endl;
-    cout << -3.14 / 2.0 * 3.0 << endl;
-    return 0;
-}
-
-
-int task_run(int task_num) {
-    const size_t N = 50;
+int task_run(int task_num, unsigned Kmax) {
+    const size_t N = 1;
     double dif = 0.0;
     vector<double> low_bounds(0), upper_bounds(0);
 
@@ -124,7 +110,7 @@ int task_run(int task_num) {
 
     double tmp_ans = 0.0, ans = 0.0;
     for (size_t i = 0; i < N; i++) {
-        tmp_ans = SA(low_bounds[0], upper_bounds[0], 5000, EnergyCalc);
+        tmp_ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc);
         if (EnergyCalc(tmp_ans) < EnergyCalc(ans))
             ans = tmp_ans;
     }
@@ -154,10 +140,9 @@ int main_plot() {
 }
 
 int main() {
-
     for (size_t i = 0; i < 1000; i++)
-        task_run(i);
-
+        task_run(i, 500);
+    //task_run(7, 5000);
 
    /* vector<double> low_bounds(0), upper_bounds(0);
     for (size_t i = 0; i < 1000; i++) {
