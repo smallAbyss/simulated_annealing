@@ -60,7 +60,7 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         }
         temp *= 0.95;
         double x_old = x;
-        double x_new =1 * rnd();
+        double x_new = x + (2 * rnd() - 1);
 
 
         if (x_new < a)
@@ -144,10 +144,10 @@ int main_plot() {
 }
 
 int main() {
-    //for (size_t i = 0; i < 1000; i++)
-    //    task_run(i, 500);
-    task_run(7, 100);
-    main_plot();
+    for (size_t i = 0; i < 1000; i++)
+        task_run(i, 5000);
+    /*task_run(7, 100);
+    main_plot();*/
 
    /* vector<double> low_bounds(0), upper_bounds(0);
     for (size_t i = 0; i < 1000; i++) {
