@@ -11,12 +11,6 @@
 
 using namespace std;
 
-
-//double rnd() {
-//    return static_cast<double>(std::rand()) / RAND_MAX;
-//}
-
-
 double rnd() {
     static std::mt19937 gen(std::random_device{}());
     static std::uniform_real_distribution<double> dist(0.0, 1.0);
@@ -52,12 +46,19 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
     double temp = estimateInitialTemp(CalcEnergy); 
     unsigned stuck_count = 0;
         
+    std::ofstream file;
+    file.open("./test.txt");
+
+    std::ofstream file2;
+    file2.open("./cov.txt");
+    double y = 0.01;
+
     while (k <= k_max) {
         if (stuck_count > 20) {
-            temp *= 1.5;
+            //temp *= 1.5;
             stuck_count = 0;
         }
-        temp *= 0.995;
+        temp *= 0.95;
         double x_old = x;
         double x_new =1 * rnd();
 
@@ -76,6 +77,8 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
             stuck_count = 0;
         }
 
+        if (k == 80 ) 
+            double a;
         double dE = e_old - e_new;
         double dET = (e_old - e_new) / temp;
         double Pexp = (exp((e_old - e_new) / temp));
@@ -91,7 +94,12 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
             }
        }
         k += 1;
+        file << x << " " << y << endl;
+        file2 << x << " " << CalcEnergy(x) << endl;
+        y += 0.01;
     }
+    file.close();
+    file2.close();
     return x;
 }
    
@@ -108,17 +116,13 @@ int task_run(int task_num, unsigned Kmax) {
         return task.ComputeFunction({ x });
     };
 
-    double tmp_ans = 0.0, ans = 0.0;
-    for (size_t i = 0; i < N; i++) {
-        tmp_ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc);
-        if (EnergyCalc(tmp_ans) < EnergyCalc(ans))
-            ans = tmp_ans;
-    }
+    double ans = 0.0;
+    ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc);
+    
    
     dif = fabs(EnergyCalc(ans) - task.GetOptimumValue());
-    
-    //std::cout << task_num << "  " << EnergyCalc(ans) << "  " << task.GetOptimumValue() << "  " << dif << std::endl;
-    std::cout << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << std::endl;
+    std::cout << task_num << "  " << EnergyCalc(ans) << "  " << task.GetOptimumValue() << "  " << dif << std::endl;
+    //std::cout << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << std::endl;
 
     return dif;
 }
@@ -127,7 +131,7 @@ int main_plot() {
     std::ofstream file;
     file.open("./gcg.txt");
 
-    THillProblem a = THillProblem(15);
+    THillProblem a = THillProblem(7);
     vector<double> low_bounds(0), upper_bounds(0);
     a.GetBounds(low_bounds, upper_bounds);
     cout << "bounds:" << low_bounds[0] << " " << upper_bounds[0] << endl << endl;
@@ -140,9 +144,10 @@ int main_plot() {
 }
 
 int main() {
-    for (size_t i = 0; i < 1000; i++)
-        task_run(i, 500);
-    //task_run(7, 5000);
+    //for (size_t i = 0; i < 1000; i++)
+    //    task_run(i, 500);
+    task_run(7, 100);
+    main_plot();
 
    /* vector<double> low_bounds(0), upper_bounds(0);
     for (size_t i = 0; i < 1000; i++) {
