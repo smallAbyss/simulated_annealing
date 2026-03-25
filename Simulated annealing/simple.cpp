@@ -19,7 +19,7 @@ double rnd() {
     return dist(gen);
 }
 
-double estimateInitialTemp(std::function<double(const double)> E, int samples = 100) {
+double estimateInitialTemp(std::function<double(const double)> E, int samples = 10) {
     double x = rnd(); ///!hardcode
     double sum = 0;
     int count = 0;
@@ -123,11 +123,16 @@ int task_run(int task_num, unsigned Kmax, std::ofstream& file_ans) {
         return task.ComputeFunction({ x });
     };
 
-    double ans = 0.0;
-    ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc);
+    double ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc);
+    for (size_t i = 0; i < N-1; i++) {
+        double tmp_ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc);
+        if (EnergyCalc(ans) > EnergyCalc(tmp_ans))
+            ans = tmp_ans;
+    }
    
     dif = fabs(EnergyCalc(ans) - task.GetOptimumValue());
-    std::cout << task_num << "  " << EnergyCalc(ans) << "  " << task.GetOptimumValue() << "  " <<  dif << std::endl;
+   // std::cout << task_num << "  " << EnergyCalc(ans) << "  " << task.GetOptimumValue() << "  " <<  dif << std::endl;
+    std::cout << task_num << '\n';
     file_ans << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' <<
         ans << ';' << task.GetOptimumPoint()[0]  << ';' << fabs(ans - task.GetOptimumPoint()[0]) << endl;
 
@@ -157,7 +162,7 @@ int main() {
     std::ofstream file_ans;
     file_ans.open("./ans.txt");
     for (size_t i = 0; i < 1000; i++)
-        task_run(i, 1000, file_ans);
+        task_run(i, 2500, file_ans);
     /*task_run(7, 100);
     main_plot();*/
     file_ans.close();
