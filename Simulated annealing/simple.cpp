@@ -6,6 +6,8 @@
 #include <fstream>
 #include <random>
 
+#include <omp.h>
+
 #include "Hill/HillProblem.hpp"
 
 
@@ -17,15 +19,15 @@ double rnd() {
     return dist(gen);
 }
 
-double estimateInitialTemp(std::function<double(const double)> E, int samples = 1000) {
+double estimateInitialTemp(std::function<double(const double)> E, int samples = 100) {
     double x = rnd(); ///!hardcode
     double sum = 0;
     int count = 0;
-    double ans = E(x);
+    double glob_ans = E(x);
     for (int i = 0; i < samples; ++i) {
         double x_new = x + rnd(); ///!hardcode
         double e_new = E(x_new);
-        ans = min(ans, e_new);
+        glob_ans = min(glob_ans, e_new);
         double dE = e_new - E(x);
 
         if (dE > 0) {
@@ -36,8 +38,8 @@ double estimateInitialTemp(std::function<double(const double)> E, int samples = 
     }
     double avg_dE = sum / count;
     double P0 = 0.8;
-    
-    return -avg_dE / log(P0);
+    double ans = -avg_dE / log(P0);
+    return ans;
 }
 
 double SA(double a, double b, unsigned k_max, std::function<double(const double x)> CalcEnergy) { /// a, b, temp, k_max
@@ -52,6 +54,7 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
     std::ofstream file2;
     file2.open("./cov.txt");
     double y = 0.01;
+    unsigned cuts = 0;
 
     while (k <= k_max) {
         if (stuck_count > 20) {
@@ -62,6 +65,7 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         double x_old = x;
         double x_new = x + (2 * rnd() - 1);
 
+        double x_cached = x_new;
 
         if (x_new < a)
             x_new = a + (a - x_new);
@@ -71,6 +75,8 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         double e_old = CalcEnergy(x_old);
         double e_new = CalcEnergy(x_new);
         
+        if (x_cached != x_new)
+            cuts++;
 
         if (e_old > e_new)  {
             x = x_new;
@@ -98,13 +104,14 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         file2 << x << " " << CalcEnergy(x) << endl;
         y += 0.01;
     }
+    //cout << "CUTS: " << cuts << endl;
     file.close();
     file2.close();
     return x;
 }
    
 
-int task_run(int task_num, unsigned Kmax) {
+int task_run(int task_num, unsigned Kmax, std::ofstream& file_ans) {
     const size_t N = 1;
     double dif = 0.0;
     vector<double> low_bounds(0), upper_bounds(0);
@@ -118,11 +125,11 @@ int task_run(int task_num, unsigned Kmax) {
 
     double ans = 0.0;
     ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc);
-    
    
     dif = fabs(EnergyCalc(ans) - task.GetOptimumValue());
-    std::cout << task_num << "  " << EnergyCalc(ans) << "  " << task.GetOptimumValue() << "  " << dif << std::endl;
-    //std::cout << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << std::endl;
+    std::cout << task_num << "  " << EnergyCalc(ans) << "  " << task.GetOptimumValue() << "  " <<  dif << std::endl;
+    file_ans << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' <<
+        ans << ';' << task.GetOptimumPoint()[0]  << ';' << fabs(ans - task.GetOptimumPoint()[0]) << endl;
 
     return dif;
 }
@@ -144,11 +151,16 @@ int main_plot() {
 }
 
 int main() {
+
+    std::cout << "TASK_NUM" << "  " << "SA ENERGY" << "  " << "OPTIMUM VAL" << "  " << "DIFF" << "     SA X" << "  " << "ANS X\n";
+//#pragma omp parallel for ordered
+    std::ofstream file_ans;
+    file_ans.open("./ans.txt");
     for (size_t i = 0; i < 1000; i++)
-        task_run(i, 5000);
+        task_run(i, 1000, file_ans);
     /*task_run(7, 100);
     main_plot();*/
-
+    file_ans.close();
    /* vector<double> low_bounds(0), upper_bounds(0);
     for (size_t i = 0; i < 1000; i++) {
     THillProblem task = THillProblem(7);
