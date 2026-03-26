@@ -20,7 +20,11 @@ double rnd() {
 }
 
 double GetNewNeighbour(const double cur_state, const double left_border, const double right_border) {
-    return cur_state + (2 * rnd() - 1); ///!hardcode: no borders
+    return cur_state + (2 * rnd() - 1); ///!hardcode: no borders && no cuts
+}
+
+double GetNewNeighbour(const double cur_state, const double left_border, const double right_border, const double temp) {
+    return cur_state + (2 * rnd() - 1) * sqrt(temp); ///!hardcode: no borders && no cuts
 }
 
 double GenInitialState(const double left_border, const double right_border) { ///!hardcode: double -> vector
@@ -38,8 +42,8 @@ double estimateInitialTemp(std::function<double(const double)> E, const double l
     double glob_ans = E(x);
 
     for (int i = 0; i < samples; ++i) {
-        x_new = GetNewNeighbour(x, left_border, right_border);
-        e_new = E(x_new);
+        x_new = GetNewNeighbour(x, left_border, right_border); 
+        e_new = E(x_new); ///! no borders cut
         glob_ans = min(glob_ans, e_new);
         dE = e_new - E(x);
 
