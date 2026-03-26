@@ -8,10 +8,13 @@
 
 #include "Hill/HillProblem.hpp"
 
+///! - stands for "Pay attention"
+///!! - "BUG HERE"
 
 using namespace std;
 
-const int SAMPLES_NUM = 10;
+const int SAMPLES_NUM = 100;
+const double ALPHA_TEMP = 0.8; ///! high for big kMax, low for small kMax
 
 double rnd() {
     static std::mt19937 gen(std::random_device{}());
@@ -146,7 +149,7 @@ int task_run(int task_num, unsigned Kmax, const size_t N, const bool all_tasks_r
 }
 
 int main_plot(const int task_num) {
-    const double step = 0.01;
+    const double step = 0.001;
     std::ofstream file;
     file.open("./gcg.txt");
 
