@@ -53,26 +53,32 @@ double estimateInitialTemp(std::function<double(const double)> E, const double l
         }
         x = x_new;
     }
-    double avg_dE = sum / count;
+    double avg_dE = sum / count; 
     double P0 = 0.8;
-    return -avg_dE / log(P0);
+    if (count > 0) ///!! either if count == 0 returns nan
+        return -avg_dE / log(P0);
+    return 0.0;
 }
 
-double SA(double a, double b, unsigned k_max, std::function<double(const double x)> CalcEnergy) { /// a, b, temp, k_max
+double SA(double a, double b, unsigned k_max, std::function<double(const double x)> CalcEnergy, const bool all_tasks_run) { /// a, b, temp, k_max
     unsigned k = 0;
     double x =  GenInitialState(a, b);
-    double temp = estimateInitialTemp(CalcEnergy, SAMPLES_NUM, a, b);
+    double temp = estimateInitialTemp(CalcEnergy, SAMPLES_NUM, a, b); //-- off bcs of a bug inside
+    /* when return NaN its working like a local search and its working BETTER than my SA.. my~25% vs NaN~45% solved by k=50 & 0.01 
+    khm, WHAT
+    ///!!
+    */
 
     std::ofstream point_coverage_file;
     point_coverage_file.open("./point_coverage.txt");
 
     std::ofstream sa_trace;
-    sa_trace.open("./cov.txt");
+    sa_trace.open("./sa_trace.txt");
     double y = 0;
 
 
     while (k <= k_max) {
-        temp *= 0.95;
+        temp *= ALPHA_TEMP;
         double x_old = x;
         double x_new = GetNewNeighbour(x, a, b);
 
@@ -85,21 +91,24 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         double e_old = CalcEnergy(x_old);
         double e_new = CalcEnergy(x_new);
 
-        //double dE = e_old - e_new;
-        //double dET = (e_old - e_new) / temp;
-        //double Pexp = (exp((e_old - e_new) / temp));
-        //double ran = rnd();
-        
+        double dE = e_old - e_new;
+        double dET = (e_old - e_new) / temp;
+        double Pexp = (exp((e_old - e_new) / temp));
+        double ran = rnd();
+
+        bool tmp_ = Pexp > ran;
         if ((e_old > e_new) || exp((e_old - e_new) / temp) > rnd() ){
             x = x_new;
         }
 
         k += 1;
 
-        point_coverage_file << x << ' ' << y << endl;
-        sa_trace << x << ' ' << CalcEnergy(x) << endl;
-        y += 0.01;
-
+        if (!all_tasks_run) {
+            //cout << x_new << endl;
+            point_coverage_file << x << ' ' << y << endl;
+            sa_trace << x << ' ' << CalcEnergy(x) << endl;
+            y += 0.01;
+        }
     }
     point_coverage_file.close();
     sa_trace.close();
@@ -107,7 +116,7 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
 }
    
 
-int task_run(int task_num, unsigned Kmax, const size_t N, std::ofstream& file_ans) {
+int task_run(int task_num, unsigned Kmax, const size_t N, const bool all_tasks_run, std::ofstream& file_ans) {
     double dif = 0.0;
     vector<double> low_bounds(0), upper_bounds(0);
 
@@ -118,9 +127,9 @@ int task_run(int task_num, unsigned Kmax, const size_t N, std::ofstream& file_an
         return task.ComputeFunction({ x });
     };
 
-    double ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc);
+    double ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc, all_tasks_run);
     for (size_t i = 0; i < N-1; i++) {
-        double tmp_ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc);
+        double tmp_ans = SA(low_bounds[0], upper_bounds[0], Kmax, EnergyCalc, all_tasks_run);
         if (EnergyCalc(ans) > EnergyCalc(tmp_ans))
             ans = tmp_ans;
     }
@@ -128,6 +137,8 @@ int task_run(int task_num, unsigned Kmax, const size_t N, std::ofstream& file_an
     dif = fabs(EnergyCalc(ans) - task.GetOptimumValue());
 
     std::cout << task_num << '\n';
+    if (!all_tasks_run)
+        std:cout << fabs(ans - task.GetOptimumPoint()[0]);
     file_ans << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' <<
         ans << ';' << task.GetOptimumPoint()[0]  << ';' << fabs(ans - task.GetOptimumPoint()[0]) << endl;
 
@@ -156,27 +167,32 @@ void main_one(const int task_num, const unsigned kMax, const size_t N) {
     // taskRun
     std::ofstream file_ans;
     file_ans.open("./ans.txt");
-    task_run(task_num, kMax, N, file_ans);
+    task_run(task_num, kMax, N, false, file_ans);
     file_ans.close();
 
     // graphic
     main_plot(task_num);
 }
 
+// task num просто чтобы меньше букв менять в мейне
 void main_all(const int task_num, const unsigned kMax, const size_t N) {
     std::ofstream file_ans;
     file_ans.open("./ans.txt");
     for (size_t i = 0; i < 1000; i++)
-        task_run(i, kMax, N, file_ans);
+        task_run(i, kMax, N, true, file_ans);
     file_ans.close();
 }
 
 
+// 268 - two min's
 int main() {
-    const int task_num = 15;
-    const unsigned kMax = 1000;
+    const int task_num = 17;
+    const unsigned kMax = 100;
     const size_t N = 1;
 
-    main_one(task_num, kMax, N);
+    //for (int i = 0; i < 10; i++)
+    //    main_one(task_num, kMax, N);
+
+    main_all(task_num, kMax, N);
     return 0;
 }
