@@ -61,7 +61,11 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
 
     std::ofstream point_coverage_file;
     point_coverage_file.open("./point_coverage.txt");
+
+    std::ofstream cov;
+    cov.open("./cov.txt");
     double y = 0;
+
 
     while (k <= k_max) {
         temp *= 0.95;
@@ -89,10 +93,12 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         k += 1;
 
         point_coverage_file << x << ' ' << y << endl;
+        cout<< x << ' ' << CalcEnergy(x) << endl;
         y += 0.01;
 
     }
     point_coverage_file.close();
+    cov.close();
     return x;
 }
    
@@ -142,7 +148,7 @@ int main_plot() {
 }
 
 void main_one() {
-    const int task_num = 7;
+    const int task_num = 15;
     const unsigned Kmax = 1000;
     const size_t N = 1;
     std::ofstream file_ans;
