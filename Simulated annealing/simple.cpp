@@ -24,7 +24,7 @@ double GetNewNeighbour(const double cur_state, const double left_border, const d
 }
 
 double GenInitialState(const double left_border, const double right_border) { ///!hardcode: double -> vector
-    return right_border + rnd() * (right_border - left_border); 
+    return left_border + rnd() * (right_border - left_border);
 }
 
 double estimateInitialTemp(std::function<double(const double)> E, const double left_border, 
@@ -62,8 +62,8 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
     std::ofstream point_coverage_file;
     point_coverage_file.open("./point_coverage.txt");
 
-    std::ofstream cov;
-    cov.open("./cov.txt");
+    std::ofstream sa_trace;
+    sa_trace.open("./cov.txt");
     double y = 0;
 
 
@@ -93,12 +93,12 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         k += 1;
 
         point_coverage_file << x << ' ' << y << endl;
-        cout<< x << ' ' << CalcEnergy(x) << endl;
+        sa_trace << x << ' ' << CalcEnergy(x) << endl;
         y += 0.01;
 
     }
     point_coverage_file.close();
-    cov.close();
+    sa_trace.close();
     return x;
 }
    
@@ -130,39 +130,36 @@ int task_run(int task_num, unsigned Kmax, const size_t N, std::ofstream& file_an
     return dif;
 }
 
-int main_plot() {
+int main_plot(const int task_num) {
+    const double step = 0.01;
     std::ofstream file;
     file.open("./gcg.txt");
 
-    THillProblem a = THillProblem(7);
+    THillProblem a = THillProblem(task_num);
     vector<double> low_bounds(0), upper_bounds(0);
     a.GetBounds(low_bounds, upper_bounds);
 
     cout << "bounds:" << low_bounds[0] << " " << upper_bounds[0] << endl << endl;
     
-    for (double x = low_bounds[0]; x <= upper_bounds[0]; x += 0.01) {
+    for (double x = low_bounds[0]; x <= upper_bounds[0]; x += step) {
         file << x << "   " << a.ComputeFunction({ x }) << std::endl;
     }
     file.close();
     return 0;
 }
 
-void main_one() {
-    const int task_num = 15;
-    const unsigned Kmax = 1000;
-    const size_t N = 1;
+void main_one(const int task_num, const unsigned kMax, const size_t N) {
+    // taskRun
     std::ofstream file_ans;
     file_ans.open("./ans.txt");
-    
-    task_run(task_num, Kmax, N, file_ans);
-
+    task_run(task_num, kMax, N, file_ans);
     file_ans.close();
+
+    // graphic
+    main_plot(task_num);
 }
 
-void main_all() {
-    const unsigned kMax = 1000;
-    const size_t N = 1;
-
+void main_all(const int task_num, const unsigned kMax, const size_t N) {
     std::ofstream file_ans;
     file_ans.open("./ans.txt");
     for (size_t i = 0; i < 1000; i++)
@@ -172,6 +169,10 @@ void main_all() {
 
 
 int main() {
-    main_one();
+    const int task_num = 15;
+    const unsigned kMax = 1000;
+    const size_t N = 1;
+
+    main_one(task_num, kMax, N);
     return 0;
 }
