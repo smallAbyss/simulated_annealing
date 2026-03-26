@@ -57,8 +57,12 @@ double estimateInitialTemp(std::function<double(const double)> E, const double l
 double SA(double a, double b, unsigned k_max, std::function<double(const double x)> CalcEnergy) { /// a, b, temp, k_max
     unsigned k = 0;
     double x =  GenInitialState(a, b);
-    double temp = estimateInitialTemp(CalcEnergy, SAMPLES_NUM, a, b); 
-        
+    double temp = estimateInitialTemp(CalcEnergy, SAMPLES_NUM, a, b);
+
+    std::ofstream point_coverage_file;
+    point_coverage_file.open("./point_coverage.txt");
+    double y = 0;
+
     while (k <= k_max) {
         temp *= 0.95;
         double x_old = x;
@@ -83,7 +87,12 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         }
 
         k += 1;
+
+        point_coverage_file << x << ' ' << y << endl;
+        y += 0.01;
+
     }
+    point_coverage_file.close();
     return x;
 }
    
@@ -132,7 +141,19 @@ int main_plot() {
     return 0;
 }
 
-int main() {
+void main_one() {
+    const int task_num = 7;
+    const unsigned Kmax = 1000;
+    const size_t N = 1;
+    std::ofstream file_ans;
+    file_ans.open("./ans.txt");
+    
+    task_run(task_num, Kmax, N, file_ans);
+
+    file_ans.close();
+}
+
+void main_all() {
     const unsigned kMax = 1000;
     const size_t N = 1;
 
@@ -141,5 +162,10 @@ int main() {
     for (size_t i = 0; i < 1000; i++)
         task_run(i, kMax, N, file_ans);
     file_ans.close();
+}
+
+
+int main() {
+    main_one();
     return 0;
 }
