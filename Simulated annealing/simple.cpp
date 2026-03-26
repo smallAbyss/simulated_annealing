@@ -19,8 +19,17 @@ double rnd() {
     return dist(gen);
 }
 
-double estimateInitialTemp(std::function<double(const double)> E, int samples) {
-    double x = rnd(); ///!hardcode
+double GetNewNeighbour(const double cur_state, const double left_border, const double right_border) {
+    return cur_state + (2 * rnd() - 1); ///!hardcode: no borders
+}
+
+double GenInitialState(const double left_border, const double right_border) { ///!hardcode: double -> vector
+    return right_border + rnd() * (right_border - left_border); 
+}
+
+double estimateInitialTemp(std::function<double(const double)> E, const double left_border, 
+                           const double right_border, const int samples) {
+    double x = GenInitialState(left_border, right_border);
     double sum = 0;
     int count = 0;
     double x_new = NULL;
@@ -29,7 +38,7 @@ double estimateInitialTemp(std::function<double(const double)> E, int samples) {
     double glob_ans = E(x);
 
     for (int i = 0; i < samples; ++i) {
-        x_new = x + rnd(); ///!hardcode
+        x_new = GetNewNeighbour(x, left_border, right_border);
         e_new = E(x_new);
         glob_ans = min(glob_ans, e_new);
         dE = e_new - E(x);
@@ -47,13 +56,13 @@ double estimateInitialTemp(std::function<double(const double)> E, int samples) {
 
 double SA(double a, double b, unsigned k_max, std::function<double(const double x)> CalcEnergy) { /// a, b, temp, k_max
     unsigned k = 0;
-    double x = a + rnd() * (b - a);
-    double temp = estimateInitialTemp(CalcEnergy, SAMPLES_NUM); 
+    double x =  GenInitialState(a, b);
+    double temp = estimateInitialTemp(CalcEnergy, SAMPLES_NUM, a, b); 
         
     while (k <= k_max) {
         temp *= 0.95;
         double x_old = x;
-        double x_new = x + (2 * rnd() - 1);
+        double x_new = GetNewNeighbour(x, a, b);
 
         if (x_new < a)
             x_new = a + (a - x_new);
@@ -64,10 +73,10 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         double e_old = CalcEnergy(x_old);
         double e_new = CalcEnergy(x_new);
 
-        double dE = e_old - e_new;
-        double dET = (e_old - e_new) / temp;
-        double Pexp = (exp((e_old - e_new) / temp));
-        double ran = rnd();
+        //double dE = e_old - e_new;
+        //double dET = (e_old - e_new) / temp;
+        //double Pexp = (exp((e_old - e_new) / temp));
+        //double ran = rnd();
         
         if ((e_old > e_new) || exp((e_old - e_new) / temp) > rnd() ){
             x = x_new;
@@ -98,7 +107,7 @@ int task_run(int task_num, unsigned Kmax, const size_t N, std::ofstream& file_an
     }
    
     dif = fabs(EnergyCalc(ans) - task.GetOptimumValue());
-   // std::cout << task_num << "  " << EnergyCalc(ans) << "  " << task.GetOptimumValue() << "  " <<  dif << std::endl;
+
     std::cout << task_num << '\n';
     file_ans << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' <<
         ans << ';' << task.GetOptimumPoint()[0]  << ';' << fabs(ans - task.GetOptimumPoint()[0]) << endl;
@@ -113,6 +122,7 @@ int main_plot() {
     THillProblem a = THillProblem(7);
     vector<double> low_bounds(0), upper_bounds(0);
     a.GetBounds(low_bounds, upper_bounds);
+
     cout << "bounds:" << low_bounds[0] << " " << upper_bounds[0] << endl << endl;
     
     for (double x = low_bounds[0]; x <= upper_bounds[0]; x += 0.01) {
@@ -123,18 +133,13 @@ int main_plot() {
 }
 
 int main() {
-    const unsigned kMax = 2500;
+    const unsigned kMax = 1000;
     const size_t N = 1;
 
-    std::cout << "TASK_NUM" << "  " << "SA ENERGY" << "  " << "OPTIMUM VAL" << "  " << "DIFF" << "  " << 
-        "SA X" << "  " << "ANS X" << "  " << "dif X\n";
-    
     std::ofstream file_ans;
     file_ans.open("./ans.txt");
     for (size_t i = 0; i < 1000; i++)
         task_run(i, kMax, N, file_ans);
-    //task_run(7, 100);
-    //main_plot();
     file_ans.close();
     return 0;
 }
