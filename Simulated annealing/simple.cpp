@@ -14,7 +14,7 @@
 using namespace std;
 
 const int SAMPLES_NUM = 100;
-const double ALPHA_TEMP = 0.8; ///! high for big kMax, low for small kMax
+const double ALPHA_TEMP = 0.999; ///! high for big kMax, low for small kMax
 
 double rnd() {
     static std::mt19937 gen(std::random_device{}());
@@ -26,7 +26,7 @@ double GetNewNeighbour(const double cur_state, const double left_border, const d
     return cur_state + (2 * rnd() - 1); ///!hardcode: no borders && no cuts
 }
 
-double GetNewNeighbour(const double cur_state, const double left_border, const double right_border, const double temp) {
+double GetNewNeighbourWithTemp(const double cur_state, const double left_border, const double right_border, const double temp) {
     return cur_state + (2 * rnd() - 1) * sqrt(temp); ///!hardcode: no borders && no cuts
 }
 
@@ -78,7 +78,12 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
     std::ofstream sa_trace;
     sa_trace.open("./sa_trace.txt");
     double y = 0;
-
+    if (!all_tasks_run) {
+        //cout << x_new << endl;
+        point_coverage_file << x << ' ' << y << endl;
+        sa_trace << x << ' ' << CalcEnergy(x) << endl;
+        y += 0.01;
+    }
 
     while (k <= k_max) {
         temp *= ALPHA_TEMP;
@@ -109,7 +114,7 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         if (!all_tasks_run) {
             //cout << x_new << endl;
             point_coverage_file << x << ' ' << y << endl;
-            sa_trace << x << ' ' << CalcEnergy(x) << endl;
+            sa_trace << x_new << ' ' << CalcEnergy(x_new) << endl;
             y += 0.01;
         }
     }
@@ -189,13 +194,14 @@ void main_all(const int task_num, const unsigned kMax, const size_t N) {
 
 // 268 - two min's
 int main() {
-    const int task_num = 17;
-    const unsigned kMax = 100;
+    const int task_num = 136;
+    const unsigned kMax = 1000;
     const size_t N = 1;
 
     //for (int i = 0; i < 10; i++)
     //    main_one(task_num, kMax, N);
 
-    main_all(task_num, kMax, N);
+    //main_all(task_num, kMax, N);
+    main_one(task_num, kMax, N);
     return 0;
 }
