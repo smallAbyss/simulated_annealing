@@ -120,7 +120,7 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         double ran = rnd();
         bool tmp_ = Pexp > ran;
 
-        if (e_old > e_new) {
+        if (CalcEnergy(x_best) > CalcEnergy(x_new)) {
             x_best = x_new;
         }
 
