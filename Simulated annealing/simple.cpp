@@ -50,6 +50,10 @@ double estimateInitialTemp(std::function<double(const double)> E, const double l
 
     for (int i = 0; i < samples; ++i) {
         x_new = GetNewNeighbour(x, left_border, right_border); 
+        if (x_new < left_border)
+            x_new = left_border + (left_border - x_new);
+        if (x_new > right_border)
+            x_new = right_border - (x_new - right_border);
         e_new = E(x_new); ///! no borders cut
         glob_ans = min(glob_ans, e_new);
         dE = e_new - E(x);
@@ -71,7 +75,7 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
     unsigned k = 0;
     double x =  GenInitialState(a, b);
     double x_best = x;
-    double temp = estimateInitialTemp(CalcEnergy, SAMPLES_NUM, a, b); //-- off bcs of a bug inside
+    double temp = estimateInitialTemp(CalcEnergy, a, b, SAMPLES_NUM); //-- off bcs of a bug inside
     /* when return NaN its working like a local search and its working BETTER than my SA.. my~25% vs NaN~45% solved by k=50 & 0.01 
     khm, WHAT
     ///!!
