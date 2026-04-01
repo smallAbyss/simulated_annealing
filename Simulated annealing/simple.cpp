@@ -13,10 +13,11 @@
 
 using namespace std;
 
-const int SAMPLES_NUM = 1000;
-const double ALPHA_TEMP = 0; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
+const int SAMPLES_NUM = 100;
+const double ALPHA_TEMP = 0.999; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
 
-const int TASK_NUM = 39;
+const int TASK_NUM = 103;
+const bool RUN_ALL_TASK = true;
 const unsigned KMAX = 1000;
 const size_t STARTS_NUM = 1;
 
@@ -218,10 +219,10 @@ int main() {
     const unsigned kMax = KMAX;
     const size_t N = STARTS_NUM;
 
-    //for (int i = 0; i < 10; i++)
-    //    main_one(task_num, kMax, N);
-
-    //main_all(task_num, kMax, N);
-    main_one(task_num, kMax, N);
+    
+    if (RUN_ALL_TASK) 
+        main_all(task_num, kMax, N);
+    else
+        main_one(task_num, kMax, N);
     return 0;
 }
