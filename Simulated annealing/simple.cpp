@@ -83,14 +83,18 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
 
     std::ofstream point_coverage_file;
     point_coverage_file.open("./point_coverage.txt");
-
     std::ofstream sa_trace;
     sa_trace.open("./sa_trace.txt");
+    std::ofstream sa_trace_lucky;
+    sa_trace_lucky.open("./sa_trace_lucky.txt");
+    
     double y = 0;
     if (!all_tasks_run) {
         //cout << x_new << endl;
         point_coverage_file << x << ' ' << y << endl;
         sa_trace << x << ' ' << CalcEnergy(x) << endl;
+        sa_trace_lucky << x << ' ' << CalcEnergy(x) << endl;
+
         y += 0.01;
     }
 
@@ -129,11 +133,13 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
             //cout << x_new << endl;
             point_coverage_file << x << ' ' << y << endl;
             sa_trace << x_new << ' ' << CalcEnergy(x_new) << endl;
+            sa_trace_lucky << x << ' ' << CalcEnergy(x) << endl;
             y += 0.01;
         }
     }
     point_coverage_file.close();
     sa_trace.close();
+    sa_trace_lucky.close();
     return (CalcEnergy(x) > CalcEnergy(x_best) ? x_best : x);
 }
    
