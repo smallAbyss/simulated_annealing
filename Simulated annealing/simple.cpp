@@ -13,8 +13,12 @@
 
 using namespace std;
 
-const int SAMPLES_NUM = 100;
-const double ALPHA_TEMP = 0.999; ///! high for big kMax, low for small kMax
+const int SAMPLES_NUM = 1000;
+const double ALPHA_TEMP = 0; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
+
+const int TASK_NUM = 39;
+const unsigned KMAX = 1000;
+const size_t STARTS_NUM = 1;
 
 double rnd() {
     static std::mt19937 gen(std::random_device{}());
@@ -42,7 +46,7 @@ double estimateInitialTemp(std::function<double(const double)> E, const double l
     double x_new = NULL;
     double e_new = NULL;
     double dE = NULL;
-    double glob_ans = E(x);
+    double glob_ans = E(x); ///! unused var
 
     for (int i = 0; i < samples; ++i) {
         x_new = GetNewNeighbour(x, left_border, right_border); 
@@ -66,6 +70,7 @@ double estimateInitialTemp(std::function<double(const double)> E, const double l
 double SA(double a, double b, unsigned k_max, std::function<double(const double x)> CalcEnergy, const bool all_tasks_run) { /// a, b, temp, k_max
     unsigned k = 0;
     double x =  GenInitialState(a, b);
+    double x_best = x;
     double temp = estimateInitialTemp(CalcEnergy, SAMPLES_NUM, a, b); //-- off bcs of a bug inside
     /* when return NaN its working like a local search and its working BETTER than my SA.. my~25% vs NaN~45% solved by k=50 & 0.01 
     khm, WHAT
@@ -99,12 +104,17 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         double e_old = CalcEnergy(x_old);
         double e_new = CalcEnergy(x_new);
 
+        /// stat stuff
         double dE = e_old - e_new;
         double dET = (e_old - e_new) / temp;
         double Pexp = (exp((e_old - e_new) / temp));
         double ran = rnd();
-
         bool tmp_ = Pexp > ran;
+
+        if (e_old > e_new) {
+            x_best = x_new;
+        }
+
         if ((e_old > e_new) || exp((e_old - e_new) / temp) > rnd() ){
             x = x_new;
         }
@@ -120,7 +130,7 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
     }
     point_coverage_file.close();
     sa_trace.close();
-    return x;
+    return (CalcEnergy(x) > CalcEnergy(x_best) ? x_best : x);
 }
    
 
@@ -194,9 +204,9 @@ void main_all(const int task_num, const unsigned kMax, const size_t N) {
 
 // 268 - two min's
 int main() {
-    const int task_num = 136;
-    const unsigned kMax = 1000;
-    const size_t N = 1;
+    const int task_num = TASK_NUM;
+    const unsigned kMax = KMAX;
+    const size_t N = STARTS_NUM;
 
     //for (int i = 0; i < 10; i++)
     //    main_one(task_num, kMax, N);
