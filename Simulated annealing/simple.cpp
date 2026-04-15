@@ -14,7 +14,7 @@
 using namespace std;
 
 const int SAMPLES_NUM = 100;
-const double ALPHA_TEMP = 0.999; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
+const double ALPHA_TEMP = 0.99; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
 
 const int TASK_NUM = 103;
 const bool RUN_ALL_TASK = true;
@@ -102,7 +102,8 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
     while (k <= k_max) {
         temp *= ALPHA_TEMP;
         double x_old = x;
-        double x_new = GetNewNeighbour(x, a, b);
+        double x_new = GetNewNeighbourWithTemp(x, a, b, temp);
+
 
         if (x_new < a)
             x_new = a + (a - x_new);
