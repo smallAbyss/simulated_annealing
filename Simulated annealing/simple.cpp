@@ -14,11 +14,11 @@
 using namespace std;
 
 const int SAMPLES_NUM = 100;
-const double ALPHA_TEMP = 0.99; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
+const double ALPHA_TEMP = 0.995; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
 
 const int TASK_NUM = 103;
-const bool RUN_ALL_TASK = true;
-const unsigned KMAX = 1000;
+const bool RUN_ALL_TASK = false;
+const unsigned KMAX = 2000;
 const size_t STARTS_NUM = 1;
 
 double rnd() {
@@ -103,13 +103,16 @@ double SA(double a, double b, unsigned k_max, std::function<double(const double 
         temp *= ALPHA_TEMP;
         double x_old = x;
         double x_new = GetNewNeighbourWithTemp(x, a, b, temp);
-
-
         if (x_new < a)
             x_new = a + (a - x_new);
         if (x_new > b)
             x_new = b - (x_new - b);
-        //x_new = max(a, min(b, x_new));
+
+        //if (x_new < a)
+        //    x_new = a + (a - x_new);
+        //if (x_new > b)
+        //    x_new = b - (x_new - b);
+        x_new = max(a, min(b, x_new));
 
         double e_old = CalcEnergy(x_old);
         double e_new = CalcEnergy(x_new);
