@@ -6,12 +6,12 @@
 #include <fstream>
 #include <random>
 
-#include "Hill/HillProblem.hpp"
-#include "GKLS/GKLSConstrainedProblem.hpp"
-#include "Shekel/ShekelProblem.hpp"
-#include "Grishagin/GrishaginConstrainedProblem.hpp"
-#include "Grishagin/grishagin_function.hpp"
-#include "GKLS/GKLSProblem.hpp"
+#include "sample_src/Hill/HillProblem.hpp"
+#include "sample_src/GKLS/GKLSConstrainedProblem.hpp"
+#include "sample_src/Shekel/ShekelProblem.hpp"
+#include "sample_src/Grishagin/GrishaginConstrainedProblem.hpp"
+#include "sample_src/Grishagin/grishagin_function.hpp"
+#include "sample_src/GKLS/GKLSProblem.hpp"
 
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec) {
@@ -47,12 +47,14 @@ vector<double> operator+(const vector<double> lhs, const vector<double> rhs) {
 using namespace std;
 
 const int SAMPLES_NUM = 100;
-const double ALPHA_TEMP = 0.9999; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
+const double ALPHA_TEMP = 0.9999995; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
 
 const int TASK_NUM = 20;
 const bool RUN_ALL_TASK = true;
-const unsigned KMAX = 10000;
+const unsigned KMAX = pow(10, 6);
 const size_t STARTS_NUM = 1;
+const int DIM = 5;
+const int MAX_TASK_NUM = 100;
 
 // todo ну
 double rnd() {
@@ -67,6 +69,14 @@ vector<double> GetNewNeighbour(const vector<double> cur_state, const vector<doub
         new_st[i] = cur_state[i] + (2 * rnd() - 1);
     return new_st; ///!hardcode: no borders && no cuts
 }
+
+vector<double> GetNewNeighbourWithTemp(const vector<double> cur_state, const vector<double> left_border, const vector<double> right_border, const double temp) {
+    vector<double> new_st(cur_state.size());
+    for (size_t i = 0; i < cur_state.size(); i++) // &i : cur_state ???
+        new_st[i] = cur_state[i] + (2 * rnd() - 1) * temp;
+    return new_st; ///!hardcode: no borders && no cuts
+}
+
 
 double GetNewNeighbourWithTemp(const double cur_state, const double left_border, const double right_border, const double temp) {
     return cur_state + (2 * rnd() - 1) * sqrt(temp); ///!hardcode: no borders && no cuts
@@ -118,7 +128,9 @@ double estimateInitialTemp(std::function<double(const vector<double>)> E, const 
 vector<double> SA(vector<double> a, vector<double> b, unsigned k_max, std::function<double(const vector<double>)> CalcEnergy, const bool all_tasks_run) { /// a, b, temp, k_max
     unsigned k = 0;
     //double x =  GenInitialState(a, b);
-    vector<double> x = { rnd(), rnd() };
+    vector<double> x(0);
+    for (int i = 0; i < DIM; i++)
+        x.push_back(rnd());
     vector<double>  x_best = x;
     //double temp = estimateInitialTemp(CalcEnergy, a[0], b[0], SAMPLES_NUM); //-- off bcs of a bug inside
     double temp = 10.0;
@@ -143,11 +155,11 @@ vector<double> SA(vector<double> a, vector<double> b, unsigned k_max, std::funct
 
         y += 0.01;
     }
-
     while (k <= k_max) {
         temp *= ALPHA_TEMP;
+        //cout << "TEMP: " << temp << endl;
         vector<double> x_old = x;
-        vector<double> x_new = GetNewNeighbour(x, a, b);
+        vector<double> x_new = GetNewNeighbourWithTemp(x, a, b, temp);
 
         //if (x_new < a)
         //    x_new = a + (a - x_new);
@@ -199,10 +211,9 @@ int task_run(int task_num, unsigned Kmax, const size_t N, const bool all_tasks_r
     vector<double> low_bounds(0), upper_bounds(0);
 
     //THillProblem task = THillProblem(task_num);
-    TGKLSConstrainedProblem task2 = TGKLSConstrainedProblem(cptInFeasibleDomain, 0.5, 0, 2);
-    TGKLSProblem tt = TGKLSProblem()
-        // 0 1 2
-    TGrishaginProblem task = TGrishaginProblem(task_num);
+    TGKLSProblem task = TGKLSProblem(task_num, DIM);
+    //TGrishaginProblem task = TGrishaginProblem(task_num);
+    
     task.GetBounds(low_bounds, upper_bounds);
      
 
@@ -220,10 +231,17 @@ int task_run(int task_num, unsigned Kmax, const size_t N, const bool all_tasks_r
     dif = fabs(EnergyCalc(ans) - task.GetOptimumValue());
 
     std::cout << task_num << '\n';
-    if (!all_tasks_run)
-        std:cout << (ans - task.GetOptimumPoint()); // rem fabs
+    if (!all_tasks_run) {
+        cout << task_num << endl;
+        cout << EnergyCalc(ans) << "   " << task.GetOptimumValue() << "   " << dif << endl;
+        cout << ans << endl;
+        cout << task.GetOptimumPoint() << endl;
+        cout << (ans - task.GetOptimumPoint()) << endl;
+    }
     file_ans << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' <<
         ans << ';' << task.GetOptimumPoint()  << ';' << (ans - task.GetOptimumPoint()) << endl; /// fabs
+
+
 
     return dif;
 }
@@ -267,7 +285,7 @@ void main_one(const int task_num, const unsigned kMax, const size_t N) {
 void main_all(const int task_num, const unsigned kMax, const size_t N) {
     std::ofstream file_ans;
     file_ans.open("./ans.txt");
-    for (size_t i = 1; i < 101; i++)
+    for (size_t i = 1; i < MAX_TASK_NUM + 1; i++)
         task_run(i, kMax, N, true, file_ans);
     file_ans.close();
 }
@@ -275,6 +293,7 @@ void main_all(const int task_num, const unsigned kMax, const size_t N) {
 
 // 268 - two min's
 int main() {
+    cout << KMAX << endl;
     const int task_num = TASK_NUM;
     const unsigned kMax = KMAX;
     const size_t N = STARTS_NUM;
