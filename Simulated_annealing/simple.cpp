@@ -5,7 +5,6 @@
 #include <functional>
 #include <fstream>
 #include <random>
-
 #include "Hill/HillProblem.hpp"
 
 ///! - stands for "Pay attention"
@@ -44,9 +43,9 @@ double estimateInitialTemp(std::function<double(const double)> E, const double l
     double x = GenInitialState(left_border, right_border);
     double sum = 0;
     int count = 0;
-    double x_new = NULL;
-    double e_new = NULL;
-    double dE = NULL;
+    double x_new;
+    double e_new;
+    double dE;
     double glob_ans = E(x); ///! unused var
 
     for (int i = 0; i < samples; ++i) {
@@ -207,7 +206,7 @@ void main_one(const int task_num, const unsigned kMax, const size_t N) {
     main_plot(task_num);
 }
 
-// task num просто чтобы меньше букв менять в мейне
+// task num пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅ
 void main_all(const int task_num, const unsigned kMax, const size_t N) {
     std::ofstream file_ans;
     file_ans.open("./ans.txt");
@@ -219,6 +218,7 @@ void main_all(const int task_num, const unsigned kMax, const size_t N) {
 
 // 268 - two min's
 int main() {
+    cout<<"fff\n"; 
     const int task_num = TASK_NUM;
     const unsigned kMax = KMAX;
     const size_t N = STARTS_NUM;

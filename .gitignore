@@ -3,12 +3,24 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# manually added
+*.sln
+*.vcxproj
+*.filters
+*.user
+cmd.md
+stats/
+build/
+.vscode/
+
+
 # User-specific files
 *.rsuser
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
+
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
@@ -399,9 +411,3 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-
-
-*.sln
-*.vcxproj
-*.filters
-*.user
