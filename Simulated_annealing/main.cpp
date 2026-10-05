@@ -17,6 +17,13 @@
 
 using namespace std;
 
+const int TASK_NUM = 10;
+const int DIM = 2;
+const unsigned KMAX = 10000; // pow(10, 6);
+
+// const size_t STARTS_NUM = 1;
+// const bool RUN_ALL_TASK = false; 
+// const int MAX_TASK_NUM = 100;
 
 int task_run(int task_num, unsigned Kmax, const bool all_tasks_run, std::ofstream& file_ans) {
     double dif = 0.0;
@@ -53,6 +60,7 @@ int task_run(int task_num, unsigned Kmax, const bool all_tasks_run, std::ofstrea
     //     cout << (ans - task.GetOptimumPoint()) << endl;
     // }
     file_ans << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << ';';
+    cout << endl << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' << endl;
     
     return dif;
 }
@@ -62,7 +70,6 @@ int main() {
     cout << KMAX << endl;
     const int task_num = TASK_NUM;
     const unsigned kMax = KMAX;
-    const size_t N = STARTS_NUM;
 
 
     std::ofstream file_ans;

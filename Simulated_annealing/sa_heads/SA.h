@@ -10,17 +10,7 @@
 using namespace std;
 
 const int SAMPLES_NUM = 100;
-const double ALPHA_TEMP = 0.995; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
-
-const int TASK_NUM = 85;
-const bool RUN_ALL_TASK = false;
-// const unsigned KMAX = pow(10, 6);
-const unsigned KMAX = 2000;
-const size_t STARTS_NUM = 1;
-
-const int DIM = 5;
-const int MAX_TASK_NUM = 100;
-
+const double ALPHA_TEMP = 0.99995; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
 
 
 double rnd() {
