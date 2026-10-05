@@ -29,7 +29,7 @@ public:
         
         MathVec<double> x_best = x;
         //double temp = estimateInitialTemp(CalcEnergy, a[0], b[0], SAMPLES_NUM); //-- off bcs of a bug inside
-        double temp = 10.0;
+        temp = 10.0;
         /* when return NaN its working like a local search and its working BETTER than my SA.. my~25% vs NaN~45% solved by k=50 & 0.01 
         khm, WHAT
         ///!!
@@ -57,13 +57,17 @@ public:
             MathVec<double>x_old = x;
             MathVec<double>x_new = GetNewNeighbour();
 
-
             for (size_t i = 0; i < x_new.size(); ++i) {
-                x_new[i] = max(rightBorder[i], min(leftBorder[i], x_new[i]));
+                if (x_new[i] < leftBorder[i])
+                    x_new[i] = leftBorder[i] + (leftBorder[i] - x_new[i]);
+                if (x_new[i] > rightBorder[i])
+                    x_new[i] = rightBorder[i] - (x_new[i] - rightBorder[i]);
+                x_new[i] = min(rightBorder[i], max(leftBorder[i], x_new[i]));
             }
 
             double e_old = CalcEnergy(x_old);
             double e_new = CalcEnergy(x_new);
+            double e_best = CalcEnergy(x_best);
 
             /// stat stuff
             double dE = e_old - e_new;
