@@ -28,6 +28,7 @@ file(GLOB SRC_FILES
     ${GCG_DIR}/sample_src/Grishagin/*.hpp
     ${GCG_DIR}/sample_src/Grishagin/*.cpp
     ${GCG_DIR}/sample_src/Hill/*.cpp
+    ${GCG_DIR}/sample_src/Hill/*.hpp
     ${GCG_DIR}/sample_src/Shekel/*.cpp
     ${GCG_DIR}/src/*.cpp
     ${GCG_DIR}/src/*.h
@@ -35,6 +36,11 @@ file(GLOB SRC_FILES
 )
 
 # Добавляем твой новый main
-file(GLOB MY_SRC ${MY_DIR}/*.cpp ${MY_DIR}/*.h ${MY_DIR}/*.hpp)
+file(GLOB MY_SRC 
+    ${MY_DIR}/*.cpp 
+    ${MY_DIR}/*.h 
+    ${MY_DIR}/*.hpp 
+    ${MY_DIR}/sa_heads/*.h 
+    ${MY_DIR}/sa_heads/*.*)
 
 add_executable(${PROJECT_NAME_STR} ${SRC_FILES} ${MY_SRC})
