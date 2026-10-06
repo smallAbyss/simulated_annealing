@@ -6,7 +6,6 @@
 #include <fstream>
 #include <random>
 
-// #include "sa_heads/MultiDimSA.h"
 #include "sa_heads/OMP_SA.h"
 
 #include "Hill/HillProblem.hpp"
@@ -20,10 +19,9 @@ using namespace std;
 
 const int TASK_NUM = 10;
 const int DIM = 2;
-const unsigned KMAX = 100000; // pow(10, 6);
+const bool RUN_ALL_TASK = false; 
 
 // const size_t STARTS_NUM = 1;
-// const bool RUN_ALL_TASK = false; 
 // const int MAX_TASK_NUM = 100;
 
 int task_run(int task_num, unsigned Kmax, const bool all_tasks_run, std::ofstream& file_ans) {
@@ -40,42 +38,37 @@ int task_run(int task_num, unsigned Kmax, const bool all_tasks_run, std::ofstrea
         return task.ComputeFunction({ x.GetRawVector() });
     };
     
-    OMP_SA sa(KMAX, lowBound, upperBound, EnergyCalc);
-    MathVec<double> ans = sa.run(KMAX, false);
+    // run SA
+    MultiDimSA sa(KMAX, lowBound, upperBound, EnergyCalc);
+    MathVec<double> sa_ans = sa.run(KMAX, false);
 
-    // vector<double> ans = SA(low_bounds, upper_bounds, Kmax, EnergyCalc, all_tasks_run);
-    // for (size_t i = 0; i < N-1; i++) {
-    //     vector<double> tmp_ans = SA(low_bounds, upper_bounds, Kmax, EnergyCalc, all_tasks_run);
-    //     if (EnergyCalc(ans) > EnergyCalc(tmp_ans))
-    //     ans = tmp_ans;
-    // }
+    // collect stats
+    MathVec<double> true_ans = task.GetOptimumPoint();
+    dif = fabs(EnergyCalc(sa_ans) - task.GetOptimumValue());
     
-    dif = fabs(EnergyCalc(ans) - task.GetOptimumValue());
-    
-    // std::cout << task_num << '\n';
-    // if (!all_tasks_run) {
-    //     cout << task_num << endl;
-    //     cout << EnergyCalc(ans) << "   " << task.GetOptimumValue() << "   " << dif << endl;
-    //     cout << ans << endl;
-    //     cout << task.GetOptimumPoint() << endl;
-    //     cout << (ans - task.GetOptimumPoint()) << endl;
-    // }
-    file_ans << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << ';';
-    cout << endl << task_num << ';' << EnergyCalc(ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' << endl;
-    
+    if (!all_tasks_run) {
+        // cout << endl << task_num << ';' << EnergyCalc(sa_ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' << endl;
+        cout << "#" << task_num << endl;
+        cout << "Optimum is " << EnergyCalc(sa_ans) << ", we got " << task.GetOptimumValue() << ", the diff: " << dif << endl;
+        cout << "Got: " << sa_ans << endl;
+        cout << "Opt: " << true_ans << endl;
+        cout << "dif: " << (sa_ans - task.GetOptimumPoint()) << endl;
+    }
+    file_ans << task_num << ';' << EnergyCalc(sa_ans) << ';' << task.GetOptimumValue() << ';' << dif << ';'
+             << sa_ans.toRawString() << ';' << true_ans.toRawString() << endl;
+
+
     return dif;
 }
 
 // 268 - two min's
 int main() {
     cout << KMAX << endl;
-    const int task_num = TASK_NUM;
-    const unsigned kMax = KMAX;
-
 
     std::ofstream file_ans;
     file_ans.open("./statsSA/ans.txt");
-    task_run(task_num, kMax, false, file_ans);
+    file_ans << "  #  ;  SA_E  ;  OPT_E  ;  dif  ; SA_Point  ;  OPT_Point";
+    task_run(TASK_NUM, KMAX, RUN_ALL_TASK, file_ans);
     file_ans.close();
 
     return 0;
