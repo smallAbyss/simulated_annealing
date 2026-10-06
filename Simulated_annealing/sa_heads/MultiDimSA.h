@@ -4,11 +4,14 @@ class MultiDimSA : public SA {
 protected:
     MathVec<double> leftBorder; 
     MathVec<double> rightBorder;
+
     MathVec<double> cur_state;
+    MathVec<double> best_state;
+
     std::function<double(const MathVec<double> x)> CalcEnergy;
     size_t DIM = 0;
+
 public:
-    
     MultiDimSA (
         size_t iteration_max, 
         MathVec<double> leftBorder, 
@@ -26,48 +29,46 @@ public:
         unsigned k = 0;
         
         //double x =  GenInitialState(a, b);
-        MathVec<double> x(leftBorder.size());
+        // MathVec<double> x(leftBorder.size());
         
-        MathVec<double> x_best = x;
+        best_state = cur_state; // cur_state is zero vector here
         //double temp = estimateInitialTemp(CalcEnergy, a[0], b[0], SAMPLES_NUM); //-- off bcs of a bug inside
         temp = 10.0;
 
         while (k <= k_max) {
             temp *= ALPHA_TEMP;
-            //cout << "TEMP: " << temp << endl;
-            MathVec<double>x_old = x;
-            MathVec<double>x_new = GetNewNeighbour();
+            MathVec<double>new_state = GetNewNeighbour();
 
-            for (size_t i = 0; i < x_new.size(); ++i) {
-                if (x_new[i] < leftBorder[i])
-                    x_new[i] = leftBorder[i] + (leftBorder[i] - x_new[i]);
-                if (x_new[i] > rightBorder[i])
-                    x_new[i] = rightBorder[i] - (x_new[i] - rightBorder[i]);
-                x_new[i] = min(rightBorder[i], max(leftBorder[i], x_new[i]));
+            for (size_t i = 0; i < new_state.size(); ++i) {
+                // if (new_state[i] < leftBorder[i])
+                //     new_state[i] = leftBorder[i] + (leftBorder[i] - new_state[i]);
+                // if (new_state[i] > rightBorder[i])
+                //     new_state[i] = rightBorder[i] - (new_state[i] - rightBorder[i]);
+                new_state[i] = min(rightBorder[i], max(leftBorder[i], new_state[i]));
             }
 
-            double e_old = CalcEnergy(x_old);
-            double e_new = CalcEnergy(x_new);
-            double e_best = CalcEnergy(x_best);
+            double e_cur = CalcEnergy(cur_state);
+            double e_new = CalcEnergy(new_state);
+            double e_best = CalcEnergy(best_state);
 
-            /// stat stuff
-            double dE = e_old - e_new;
-            double dET = (e_old - e_new) / temp;
-            double Pexp = (exp((e_old - e_new) / temp));
+            // stat stuff
+            double dE = e_cur - e_new;
+            double dET = (e_cur - e_new) / temp;
+            double Pexp = (exp((e_cur - e_new) / temp));
             double ran = rnd();
             bool tmp_ = Pexp > ran;
 
-            if (CalcEnergy(x_best) > CalcEnergy(x_new)) {
-                x_best = x_new;
+            if (CalcEnergy(best_state) > CalcEnergy(new_state)) {
+                best_state = new_state;
             }
-
-            if ((e_old > e_new) || exp((e_old - e_new) / temp) > rnd() ){
-                x = x_new;
+            
+            if ((e_cur > e_new) || exp((e_cur - e_new) / temp) > rnd() ){
+                cur_state = new_state;
             }
 
             k += 1;
         }
-        return (CalcEnergy(x) > CalcEnergy(x_best) ? x_best : x);
+        return (CalcEnergy(cur_state) > CalcEnergy(best_state) ? best_state : cur_state);
     }
     
     virtual MathVec<double> GetNewNeighbour() { ///!hardcode: no borders && no cuts
@@ -121,19 +122,19 @@ private:
         MathVec<double> x = GenInitialState();
         double sum = 0;
         int count = 0;
-        MathVec<double> x_new;
+        MathVec<double> new_state;
         double e_new;
         double dE;
         double glob_ans = CalcEnergy(x); ///! unused var
 
         for (int i = 0; i < samples; ++i) {
-            x_new = GetNewNeighbour(); 
-            if (isBeyondLeftBorder(x_new))
-                x_new = leftBorder + (leftBorder - x_new);
-            if (isBeyondRightBorder(x_new))
-                x_new = rightBorder - (x_new - rightBorder);
+            new_state = GetNewNeighbour(); 
+            if (isBeyondLeftBorder(new_state))
+                new_state = leftBorder + (leftBorder - new_state);
+            if (isBeyondRightBorder(new_state))
+                new_state = rightBorder - (new_state - rightBorder);
                 
-            e_new = CalcEnergy(x_new); ///! no borders cut
+            e_new = CalcEnergy(new_state); ///! no borders cut
             glob_ans = min(glob_ans, e_new);
             dE = e_new - CalcEnergy(x);
 
@@ -141,7 +142,7 @@ private:
                 sum += dE;
                 count++;
             }
-            x = x_new;
+            x = new_state;
         }
         double avg_dE = sum / count; 
         double P0 = 0.8;
