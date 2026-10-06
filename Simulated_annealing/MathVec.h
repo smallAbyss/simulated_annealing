@@ -33,7 +33,7 @@ public:
     MathVec(std::initializer_list<T>& init) : data(init) {}
 
     // via Initializer std::vector
-    explicit MathVec(const std::vector<T>& vec) : data(vec) {}
+    MathVec(const std::vector<T>& vec) : data(vec) {}
 
     const std::vector<T>& GetRawVector() const {
         return data;
@@ -61,6 +61,17 @@ public:
         }
         os << "]";
         return os;
+    }
+
+    std::string toRawString() {
+        std::string str = "";
+        for (size_t i = 0; i < data.size(); ++i) {
+            str += data[i];
+            if (i < data.size() - 1) {
+                str += ", ";
+            }
+        }
+        return str;
     }
 
     T& operator[](size_t index) {
