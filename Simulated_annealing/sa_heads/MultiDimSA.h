@@ -1,6 +1,7 @@
 #include "SA.h"
 
 class MultiDimSA : public SA {
+protected:
     MathVec<double> leftBorder; 
     MathVec<double> rightBorder;
     MathVec<double> cur_state;
@@ -30,27 +31,7 @@ public:
         MathVec<double> x_best = x;
         //double temp = estimateInitialTemp(CalcEnergy, a[0], b[0], SAMPLES_NUM); //-- off bcs of a bug inside
         temp = 10.0;
-        /* when return NaN its working like a local search and its working BETTER than my SA.. my~25% vs NaN~45% solved by k=50 & 0.01 
-        khm, WHAT
-        ///!!
-        */
 
-        std::ofstream point_coverage_file;
-        point_coverage_file.open("./point_coverage.txt");
-        std::ofstream sa_trace;
-        sa_trace.open("./sa_trace.txt");
-        std::ofstream sa_trace_lucky;
-        sa_trace_lucky.open("./sa_trace_lucky.txt");
-        
-        double y = 0;
-        if (!all_tasks_run) {
-            //cout << x_new << endl;
-            point_coverage_file << x << endl;
-            sa_trace << x << ' ' << CalcEnergy(x) << endl;
-            sa_trace_lucky << x << ' ' << CalcEnergy(x) << endl;
-
-            y += 0.01;
-        }
         while (k <= k_max) {
             temp *= ALPHA_TEMP;
             //cout << "TEMP: " << temp << endl;
@@ -85,19 +66,7 @@ public:
             }
 
             k += 1;
-
-            if (!all_tasks_run) {
-                //cout << x_new << endl;
-
-                point_coverage_file << x << endl;
-                sa_trace << x_new << ' ' << CalcEnergy(x_new) << endl;
-                sa_trace_lucky << x << ' ' << CalcEnergy(x) << endl;
-                y += 0.01;
-            }
         }
-        point_coverage_file.close();
-        sa_trace.close();
-        sa_trace_lucky.close();
         return (CalcEnergy(x) > CalcEnergy(x_best) ? x_best : x);
     }
     

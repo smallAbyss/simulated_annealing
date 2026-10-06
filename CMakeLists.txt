@@ -43,4 +43,8 @@ file(GLOB MY_SRC
     ${MY_DIR}/sa_heads/*.h 
     ${MY_DIR}/sa_heads/*.*)
 
+find_package(OpenMP REQUIRED)
+
 add_executable(${PROJECT_NAME_STR} ${SRC_FILES} ${MY_SRC})
+
+target_link_libraries(${PROJECT_NAME_STR} PRIVATE OpenMP::OpenMP_CXX)
