@@ -125,16 +125,3 @@ public:
         
 
 };
-
-// int main() {
-//     MathVec<double> v1 = {1.0, 2.0, 3.0};
-//     MathVec<double> v2 = {4.0, 5.0, 6.0};
-
-//     MathVec<double> v3 = v1 + v2;
-//     std::cout << "v1 + v2 = " << v3 << "\n";
-
-//     MathVec<double> v4 = 2.0 * v1;
-//     std::cout << "2.0 * v1 = " << v4 << "\n";
-
-//     return 0;
-// }
