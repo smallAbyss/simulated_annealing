@@ -6,7 +6,8 @@
 #include <fstream>
 #include <random>
 
-#include "sa_heads/MultiDimSA.h"
+// #include "sa_heads/MultiDimSA.h"
+#include "sa_heads/OMP_SA.h"
 
 #include "Hill/HillProblem.hpp"
 #include "GKLS/GKLSConstrainedProblem.hpp"
@@ -19,7 +20,7 @@ using namespace std;
 
 const int TASK_NUM = 10;
 const int DIM = 2;
-const unsigned KMAX = 10000; // pow(10, 6);
+const unsigned KMAX = 100000; // pow(10, 6);
 
 // const size_t STARTS_NUM = 1;
 // const bool RUN_ALL_TASK = false; 
@@ -39,7 +40,7 @@ int task_run(int task_num, unsigned Kmax, const bool all_tasks_run, std::ofstrea
         return task.ComputeFunction({ x.GetRawVector() });
     };
     
-    MultiDimSA sa(KMAX, lowBound, upperBound, EnergyCalc);
+    OMP_SA sa(KMAX, lowBound, upperBound, EnergyCalc);
     MathVec<double> ans = sa.run(KMAX, false);
 
     // vector<double> ans = SA(low_bounds, upper_bounds, Kmax, EnergyCalc, all_tasks_run);
