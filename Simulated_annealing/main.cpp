@@ -17,8 +17,10 @@
 
 using namespace std;
 
-const int TASK_NUM = 10;
-const int DIM = 2;
+# define SA_CLASS MultiDimSA
+const int TASK_NUM = 20;
+
+const int DIM = 5;
 const bool RUN_ALL_TASK = false; 
 
 // const size_t STARTS_NUM = 1;
@@ -39,7 +41,7 @@ int task_run(int task_num, unsigned Kmax, const bool all_tasks_run, std::ofstrea
     };
     
     // run SA
-    MultiDimSA sa(KMAX, lowBound, upperBound, EnergyCalc);
+    SA_CLASS sa(KMAX, lowBound, upperBound, EnergyCalc);
     MathVec<double> sa_ans = sa.run(KMAX, false);
 
     // collect stats
@@ -49,7 +51,7 @@ int task_run(int task_num, unsigned Kmax, const bool all_tasks_run, std::ofstrea
     if (!all_tasks_run) {
         // cout << endl << task_num << ';' << EnergyCalc(sa_ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' << endl;
         cout << "#" << task_num << endl;
-        cout << "Optimum is " << EnergyCalc(sa_ans) << ", we got " << task.GetOptimumValue() << ", the diff: " << dif << endl;
+        cout << "Optimum is " << task.GetOptimumValue() << ", we got " << EnergyCalc(sa_ans) << ", the diff: " << dif << endl;
         cout << "Got: " << sa_ans << endl;
         cout << "Opt: " << true_ans << endl;
         cout << "dif: " << (sa_ans - task.GetOptimumPoint()) << endl;
