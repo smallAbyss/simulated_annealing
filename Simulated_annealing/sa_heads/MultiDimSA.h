@@ -10,6 +10,8 @@ protected:
 
     std::function<double(const MathVec<double> x)> CalcEnergy;
     size_t DIM = 0;
+    double ALPHA = 0.0;
+    const double T_end = 0.001;
 
 public:
     MultiDimSA (
@@ -34,9 +36,10 @@ public:
         best_state = cur_state; // cur_state is zero vector here
         //double temp = estimateInitialTemp(CalcEnergy, a[0], b[0], SAMPLES_NUM); //-- off bcs of a bug inside
         temp = 10.0;
-
+        ALPHA = pow(T_end / temp, 1.0 / k_max);
+        cout << "ALPHA: " << ALPHA << endl;
         while (k <= k_max) {
-            temp *= ALPHA_TEMP;
+            temp *= ALPHA;
             MathVec<double>new_state = GetNewNeighbour();
 
             for (size_t i = 0; i < new_state.size(); ++i) {
