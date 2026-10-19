@@ -21,7 +21,7 @@ using namespace std;
 const int TASK_NUM = 20;
 
 const int DIM = 5;
-const bool RUN_ALL_TASK = false; 
+const bool RUN_ALL_TASK = true; 
 
 // const size_t STARTS_NUM = 1;
 // const int MAX_TASK_NUM = 100;
@@ -59,9 +59,9 @@ int task_run(int task_num, unsigned Kmax, const bool all_tasks_run, std::ofstrea
     file_ans << task_num << ';' << EnergyCalc(sa_ans) << ';' << task.GetOptimumValue() << ';' << dif << ';'
              << sa_ans.toRawString() << ';' << true_ans.toRawString() << endl;
 
-
     return dif;
 }
+
 
 // 268 - two min's
 int main() {
@@ -69,10 +69,18 @@ int main() {
 
     std::ofstream file_ans;
     file_ans.open("./statsSA/ans.txt");
-    file_ans << "  #  ;  SA_E  ;  OPT_E  ;  dif  ; SA_Point  ;  OPT_Point";
-    task_run(TASK_NUM, KMAX, RUN_ALL_TASK, file_ans);
-    file_ans.close();
+    file_ans << "  #  ;  SA_E  ;  OPT_E  ;  dif  ; SA_Point  ;  OPT_Point" << endl;
+    // all_task_run(KMAX, file_ans);
+    if (RUN_ALL_TASK) {
+        for (size_t i = 1; i < 100; i++){
+            task_run(i, KMAX, RUN_ALL_TASK, file_ans);   
+        }
+    }
+    else {
+        task_run(TASK_NUM, KMAX, RUN_ALL_TASK, file_ans);  
+    }
 
+    file_ans.close();
     return 0;
 }
 
