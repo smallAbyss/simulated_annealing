@@ -1,3 +1,4 @@
+#pragma once
 #include "MultiDimSA.h"
 #include <omp.h>
 
@@ -30,10 +31,6 @@ public:
                 candidates[j] = GetNewNeighbour();
                 
                 for (size_t i = 0; i < candidates[j].size(); ++i) {
-                    // if (candidates[j][i] < leftBorder[i])
-                    // candidates[j][i] = leftBorder[i] + (leftBorder[i] - candidates[j][i]);
-                    // if (candidates[j][i] > rightBorder[i])
-                    // candidates[j][i] = rightBorder[i] - (candidates[j][i] - rightBorder[i]);
                     candidates[j][i] = min(rightBorder[i], max(leftBorder[i], candidates[j][i]));
                 }
                 energies[j] = CalcEnergy(candidates[j]);

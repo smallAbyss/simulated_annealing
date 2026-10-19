@@ -1,3 +1,4 @@
+#pragma once
 #include "SA.h"
 
 class MultiDimSA : public SA {
@@ -34,14 +35,20 @@ public:
         //double temp = estimateInitialTemp(CalcEnergy, a[0], b[0], SAMPLES_NUM); //-- off bcs of a bug inside
         T_0 = temp = 10.0;
         ALPHA = pow(T_end / temp, 1.0 / k_max);
-        // ALPHA = ALPHA_TEMP;
+        ALPHA = ALPHA_TEMP;
         
         cout << "ALPHA: " << ALPHA << endl;
+        std::ofstream delta_ans;
+        delta_ans.open("./stats/delta_ans.txt");
         while (k <= k_max) {
             temp *= ALPHA;
             MathVec<double>new_state = GetNewNeighbour();
 
             for (size_t i = 0; i < new_state.size(); ++i) {
+                // if (new_state[i] < leftBorder[i])
+                //     new_state[i] = leftBorder[i] + (leftBorder[i] - new_state[i]);
+                // if (new_state[i] > rightBorder[i])
+                //     new_state[i] = rightBorder[i] - (new_state[i] - rightBorder[i]);
                 new_state[i] = min(rightBorder[i], max(leftBorder[i], new_state[i]));
             }
 
@@ -65,6 +72,8 @@ public:
             }
 
             k += 1;
+            
+            delta_ans << k << " " << CalcEnergy(best_state) << endl;
         }
         return (CalcEnergy(cur_state) > CalcEnergy(best_state) ? best_state : cur_state);
     }
