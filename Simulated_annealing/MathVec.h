@@ -1,4 +1,5 @@
 #include <vector>
+#include <sstream>
 #include <iostream>
 #include <initializer_list>
 #include <stdexcept>
@@ -62,17 +63,15 @@ public:
         os << "]";
         return os;
     }
-
-    std::string toRawString() {
-        std::string str = "";
+    
+    std::string toRawString() const {
+        std::ostringstream oss;
         for (size_t i = 0; i < data.size(); ++i) {
-            str += data[i];
-            if (i < data.size() - 1) {
-                str += ", ";
-            }
+            if (i > 0) oss << ", ";
+            oss << data[i];
         }
-        return str;
-    }
+    return oss.str();
+}
 
     T& operator[](size_t index) {
         if (index >= size()) 
