@@ -8,11 +8,13 @@
 *.vcxproj
 *.filters
 *.user
+
 cmd.md
-stats/
-build/
 .vscode/
+build/
 OLD/
+stats/
+reports/
 
 
 # User-specific files
@@ -412,4 +414,3 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
-
