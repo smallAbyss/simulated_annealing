@@ -12,6 +12,7 @@ protected:
     size_t DIM = 0;
     double ALPHA = 0.0;
     const double T_end = 0.001;
+    double T_0;
 
 public:
     MultiDimSA (
@@ -24,29 +25,23 @@ public:
         if (leftBorder.size() != rightBorder.size())
             throw std::invalid_argument("borders have different sizes in SA:constructor");
         DIM = leftBorder.size();
-        cur_state = GenInitialState();
+        SetInitialState();
     }
 
     virtual MathVec<double> run(unsigned k_max, const bool all_tasks_run) {
         unsigned k = 0;
-        
-        //double x =  GenInitialState(a, b);
-        // MathVec<double> x(leftBorder.size());
-        
         best_state = cur_state; // cur_state is zero vector here
         //double temp = estimateInitialTemp(CalcEnergy, a[0], b[0], SAMPLES_NUM); //-- off bcs of a bug inside
-        temp = 10.0;
+        T_0 = temp = 10.0;
         ALPHA = pow(T_end / temp, 1.0 / k_max);
+        // ALPHA = ALPHA_TEMP;
+        
         cout << "ALPHA: " << ALPHA << endl;
         while (k <= k_max) {
             temp *= ALPHA;
             MathVec<double>new_state = GetNewNeighbour();
 
             for (size_t i = 0; i < new_state.size(); ++i) {
-                // if (new_state[i] < leftBorder[i])
-                //     new_state[i] = leftBorder[i] + (leftBorder[i] - new_state[i]);
-                // if (new_state[i] > rightBorder[i])
-                //     new_state[i] = rightBorder[i] - (new_state[i] - rightBorder[i]);
                 new_state[i] = min(rightBorder[i], max(leftBorder[i], new_state[i]));
             }
 
@@ -74,17 +69,31 @@ public:
         return (CalcEnergy(cur_state) > CalcEnergy(best_state) ? best_state : cur_state);
     }
     
-    virtual MathVec<double> GetNewNeighbour() { ///!hardcode: no borders && no cuts
+    virtual MathVec<double> GetNewNeighbour() {
+        double step_frac = 0.2 * sqrt(temp / T_0);
         MathVec<double>new_st(cur_state.size());
-        for (size_t i = 0; i < cur_state.size(); i++) // &i : cur_state ???
-            new_st[i] = cur_state[i] + (2 * rnd() - 1) * temp;
+        for (size_t i = 0; i < cur_state.size(); i++) {
+            double w = rightBorder[i] - leftBorder[i];
+            new_st[i] = cur_state[i] + (2 * rnd() - 1) * step_frac * w;
+            new_st[i] = fold(new_st[i], leftBorder[i], rightBorder[i]);
+        }
         return new_st;
     
     }
+
+    double fold(double x, double l, double r) {
+        double w = r - l;
+        double t = fmod(x - l, 2 * w);
+        if (t < 0) t += 2 * w;
+        return l + (t <= w ? t : 2 * w - t);
+    }
     
     // just vec of 0, no border's
-    virtual MathVec<double> GenInitialState() { //! no borders
-        return MathVec<double>(DIM);
+    virtual MathVec<double> SetInitialState() { //! no borders
+        MathVec<double> init_state(DIM);
+        for (size_t i = 0; i < DIM; i++)
+            init_state[i] = leftBorder[i] + rnd() * (rightBorder[i] - leftBorder[i]);
+        return cur_state = init_state;
     }
 
 private:
@@ -122,7 +131,7 @@ private:
     // можно притвориться умным и сохранять последние sample точек
     // только это никакого объяснения кроме костыля для не-потери вот эти точек не имеет
     virtual double estimateInitialTemp(const int samples) {
-        MathVec<double> x = GenInitialState();
+        MathVec<double> x = SetInitialState();
         double sum = 0;
         int count = 0;
         MathVec<double> new_state;
@@ -131,7 +140,7 @@ private:
         double glob_ans = CalcEnergy(x); ///! unused var
 
         for (int i = 0; i < samples; ++i) {
-            new_state = GetNewNeighbour(); 
+            new_state = GetNewNeighbour(); // temp is 0 in constructor, passes here
             if (isBeyondLeftBorder(new_state))
                 new_state = leftBorder + (leftBorder - new_state);
             if (isBeyondRightBorder(new_state))
