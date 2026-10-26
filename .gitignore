@@ -11,10 +11,12 @@
 
 cmd.md
 .vscode/
+.venv/
 build/
 OLD/
 stats/
 reports/
+bats/
 
 
 # User-specific files

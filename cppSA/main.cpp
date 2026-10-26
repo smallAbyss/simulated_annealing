@@ -6,7 +6,8 @@
 #include <fstream>
 #include <random>
 
-#include "sa_heads/OMP_SA.h"
+#include "OMP_SA.h"
+#include "le_OMP_SA.h"
 
 #include "Hill/HillProblem.hpp"
 #include "GKLS/GKLSConstrainedProblem.hpp"
@@ -17,8 +18,9 @@
 
 using namespace std;
 
-# define SA_CLASS MultiDimSA
-const int TASK_NUM = 20;
+# define SA_CLASS le_OMP_SA
+// # define SA_CLASS MultiDimSA
+const int TASK_NUM = 52;
 
 const int DIM = 5;
 const bool RUN_ALL_TASK = true; 
@@ -68,7 +70,7 @@ int main() {
     cout << KMAX << endl;
 
     std::ofstream file_ans;
-    file_ans.open("./statsSA/ans.txt");
+    file_ans.open("./stats/ans.txt");
     file_ans << "  #  ;  SA_E  ;  OPT_E  ;  dif  ; SA_Point  ;  OPT_Point" << endl;
     // all_task_run(KMAX, file_ans);
     if (RUN_ALL_TASK) {

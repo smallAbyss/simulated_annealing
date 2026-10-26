@@ -9,13 +9,14 @@ project(${PROJECT_NAME_STR})
 # Корень старого проекта - задаём var
 set(GCG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/GCGen)
 # Папка с новым main - задаём var
-set(MY_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/Simulated_annealing)
+set(MY_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/cppSA)
 
 # Инклюды: и старые src, и новый My, и GCG целиком
 include_directories(
     ${GCG_DIR}/src
     ${GCG_DIR}/sample_src
     ${MY_DIR}
+    ${MY_DIR}/sa
 )
 
 # Собираем исходники старого проекта
@@ -40,8 +41,8 @@ file(GLOB MY_SRC
     ${MY_DIR}/*.cpp 
     ${MY_DIR}/*.h 
     ${MY_DIR}/*.hpp 
-    ${MY_DIR}/sa_heads/*.h 
-    ${MY_DIR}/sa_heads/*.*)
+    ${MY_DIR}/sa/*.h 
+    ${MY_DIR}/sa/*.*)
 
 find_package(OpenMP REQUIRED)
 

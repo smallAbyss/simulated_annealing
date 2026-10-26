@@ -12,6 +12,7 @@ using namespace std;
 
 const int SAMPLES_NUM = 100;
 const double ALPHA_TEMP = 0.99995; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
+                        //0.999991
 const unsigned KMAX = pow(10, 6);
 
 
