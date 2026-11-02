@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 4.3)
 
 set(PROJECT_NAME_STR sa)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 
 project(${PROJECT_NAME_STR})
 
-# Корень старого проекта - задаём var
 set(GCG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/GCGen)
-# Папка с новым main - задаём var
 set(MY_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/cppSA)
+set(LOG_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/Logger)
 
 # Инклюды: и старые src, и новый My, и GCG целиком
 include_directories(
@@ -17,6 +17,7 @@ include_directories(
     ${GCG_DIR}/sample_src
     ${MY_DIR}
     ${MY_DIR}/sa
+    ${LOG_DIR}
 )
 
 # Собираем исходники старого проекта
@@ -42,7 +43,9 @@ file(GLOB MY_SRC
     ${MY_DIR}/*.h 
     ${MY_DIR}/*.hpp 
     ${MY_DIR}/sa/*.h 
-    ${MY_DIR}/sa/*.*)
+    ${MY_DIR}/sa/*.*
+    ${LOG_DIR}/*.*
+    )
 
 find_package(OpenMP REQUIRED)
 
