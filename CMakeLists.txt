@@ -7,48 +7,52 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(${PROJECT_NAME_STR})
 
-set(GCG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/GCGen)
-set(MY_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/cppSA)
-set(LOG_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/Logger)
+set(LIBS ${CMAKE_CURRENT_SOURCE_DIR}/src/libs)
+set(cppSA  ${CMAKE_CURRENT_SOURCE_DIR}/src/app/cppSA)
 
-# Инклюды: и старые src, и новый My, и GCG целиком
+
 include_directories(
-    ${GCG_DIR}/src
-    ${GCG_DIR}/sample_src
-    ${MY_DIR}
-    ${MY_DIR}/sa
-    ${LOG_DIR}
+    ${LIBS}/GCGen/src
+    ${LIBS}/GCGen/sample_src
+    ${LIBS}/Logger
+    ${cppSA}
+    ${cppSA}/sa
 )
 
-# Собираем исходники старого проекта
-file(GLOB SRC_FILES
-    ${GCG_DIR}/sample_src/*.cpp
-    ${GCG_DIR}/sample_src/*.h
-    ${GCG_DIR}/sample_src/*.hpp
-    ${GCG_DIR}/sample_src/GKLS/*.hpp
-    ${GCG_DIR}/sample_src/GKLS/*.cpp
-    ${GCG_DIR}/sample_src/Grishagin/*.hpp
-    ${GCG_DIR}/sample_src/Grishagin/*.cpp
-    ${GCG_DIR}/sample_src/Hill/*.cpp
-    ${GCG_DIR}/sample_src/Hill/*.hpp
-    ${GCG_DIR}/sample_src/Shekel/*.cpp
-    ${GCG_DIR}/src/*.cpp
-    ${GCG_DIR}/src/*.h
-    ${GCG_DIR}/src/*.hpp
+
+file(GLOB GCGen_SRC
+    ${LIBS}/GCGen/sample_src/*.cpp
+    ${LIBS}/GCGen/sample_src/*.h
+    ${LIBS}/GCGen/sample_src/*.hpp
+    ${LIBS}/GCGen/sample_src/GKLS/*.hpp
+    ${LIBS}/GCGen/sample_src/GKLS/*.cpp
+    ${LIBS}/GCGen/sample_src/Grishagin/*.hpp
+    ${LIBS}/GCGen/sample_src/Grishagin/*.cpp
+    ${LIBS}/GCGen/sample_src/Hill/*.cpp
+    ${LIBS}/GCGen/sample_sr
+    ${LIBS}/GCGen/src/*.h
+    ${LIBS}/GCGen/src/*.hc/Hill/*.hpp
+    ${LIBS}/GCGen/sample_src/Shekel/*.cpp
+    ${LIBS}/GCGen/src/*.cpp
+    ${LIBS}/GCGen/src/*.h
+    ${LIBS}/GCGen/src/*.hpp
 )
 
-# Добавляем твой новый main
-file(GLOB MY_SRC 
-    ${MY_DIR}/*.cpp 
-    ${MY_DIR}/*.h 
-    ${MY_DIR}/*.hpp 
-    ${MY_DIR}/sa/*.h 
-    ${MY_DIR}/sa/*.*
-    ${LOG_DIR}/*.*
-    )
+
+file(GLOB SA_SRC 
+    ${cppSA}/*.cpp 
+    ${cppSA}/*.h 
+    ${cppSA}/*.hpp 
+    ${cppSA}/sa/*.h 
+    ${cppSA}/sa/*.*
+)
+
+file(GLOB LOGGER_SRC
+    ${LIBS}/Logger
+)
 
 find_package(OpenMP REQUIRED)
 
-add_executable(${PROJECT_NAME_STR} ${SRC_FILES} ${MY_SRC})
+add_executable(${PROJECT_NAME_STR} ${GCGen_SRC} ${SA_SRC} ${LOGGER_SRC})
 
 target_link_libraries(${PROJECT_NAME_STR} PRIVATE OpenMP::OpenMP_CXX)

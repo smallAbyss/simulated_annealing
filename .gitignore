@@ -9,14 +9,13 @@
 *.filters
 *.user
 
-cmd.md
 .vscode/
 .venv/
+.old/
 build/
-OLD/
-stats/
-reports/
-bats/
+
+data/*
+scripts/shell/
 TODO
 
 

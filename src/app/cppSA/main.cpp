@@ -18,8 +18,8 @@
 
 using namespace std;
 
-# define SA_CLASS le_OMP_SA
-// # define SA_CLASS MultiDimSA
+// # define SA_CLASS le_OMP_SA
+# define SA_CLASS MultiDimSA
 const int TASK_NUM = 52;
 
 const int DIM = 2;
@@ -57,7 +57,7 @@ double task_run(int task_num, unsigned Kmax, Log& log) {
 
 int main() {
     LoggerConfig cfg;
-    cfg.dir          = "./stats";
+    cfg.dir          = "./data/stats";
     cfg.trace_steps  = !RUN_ALL_TASK;   // step-by-step only for a single task
     cfg.trace_stride = 100;             // 1 = every iteration
     cfg.echo_console = !RUN_ALL_TASK;
