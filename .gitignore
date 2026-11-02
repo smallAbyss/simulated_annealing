@@ -17,6 +17,7 @@ OLD/
 stats/
 reports/
 bats/
+TODO
 
 
 # User-specific files
@@ -416,3 +417,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
