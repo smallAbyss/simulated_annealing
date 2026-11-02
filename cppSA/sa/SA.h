@@ -7,13 +7,14 @@
 #include <fstream>
 #include <random>
 #include "MathVec.h"
+#include "Logger.hpp"
 
 using namespace std;
 
 const int SAMPLES_NUM = 100;
-const double ALPHA_TEMP = 0.99995; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
+const double ALPHA_TEMP = 0.9995; /// make high for big kMax, low for small kMax  |  (0.6 ; 0.9995)
                         //0.999991
-const unsigned KMAX = pow(10, 6);
+const unsigned KMAX = pow(10, 5);
 
 
 double rnd() {
@@ -23,18 +24,14 @@ double rnd() {
 }
 
 
-// template <typename V> // V - vector aka point, R - result aka FunctionResult aka double
+
 class SA {
 protected:
     size_t iteration_max;
     double temp;
-public:    
-    SA(size_t iteration_max) : temp(0), iteration_max(iteration_max) {}
-
-    // virtual MathVec<double> run();
-    // virtual MathVec<double> GetNewNeighbour();
-    // virtual MathVec<double> GenInitialState();
-
-protected:
-    // virtual double estimateInitialTemp();
+    SAObserver<MathVec<double>>* observer = nullptr;   // non-owning
+public:
+    SA(size_t iteration_max) : iteration_max(iteration_max), temp(0) {}
+    virtual ~SA() = default;
+    void setObserver(SAObserver<MathVec<double>>* o) { observer = o; }
 };

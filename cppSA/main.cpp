@@ -22,67 +22,49 @@ using namespace std;
 // # define SA_CLASS MultiDimSA
 const int TASK_NUM = 52;
 
-const int DIM = 5;
-const bool RUN_ALL_TASK = true; 
+const int DIM = 2;
+const bool RUN_ALL_TASK = false; 
 
 // const size_t STARTS_NUM = 1;
 // const int MAX_TASK_NUM = 100;
 
-int task_run(int task_num, unsigned Kmax, const bool all_tasks_run, std::ofstream& file_ans) {
-    double dif = 0.0;
-    
-    // converting bounds to MathVec
-    vector<double> low_bounds(0), upper_bounds(0);
-    TGKLSProblem task = TGKLSProblem(task_num, DIM); // also has TGrishaginProblem, THillProblem(task_num) (both are linear)    
+using Log = Logger<MathVec<double>>;
+
+double task_run(int task_num, unsigned Kmax, Log& log) {
+    cout << task_num << "\n";
+
+    // setUp task
+    vector<double> low_bounds, upper_bounds;
+    TGKLSProblem task(task_num, DIM);
     task.GetBounds(low_bounds, upper_bounds);
-    MathVec<double> lowBound(low_bounds), upperBound(upper_bounds); 
-    
-    // converting function to func(MathVec)
-    std::function<double(const MathVec<double>&)> EnergyCalc = [&task](const MathVec<double>& x) {
-        return task.ComputeFunction({ x.GetRawVector() });
-    };
-    
-    // run SA
-    SA_CLASS sa(KMAX, lowBound, upperBound, EnergyCalc);
-    MathVec<double> sa_ans = sa.run(KMAX, false);
+    MathVec<double> lowBound(low_bounds), upperBound(upper_bounds);
 
-    // collect stats
-    MathVec<double> true_ans = task.GetOptimumPoint();
-    dif = fabs(EnergyCalc(sa_ans) - task.GetOptimumValue());
-    
-    if (!all_tasks_run) {
-        // cout << endl << task_num << ';' << EnergyCalc(sa_ans) << ';' << task.GetOptimumValue() << ';' << dif << ';' << endl;
-        cout << "#" << task_num << endl;
-        cout << "Optimum is " << task.GetOptimumValue() << ", we got " << EnergyCalc(sa_ans) << ", the diff: " << dif << endl;
-        cout << "Got: " << sa_ans << endl;
-        cout << "Opt: " << true_ans << endl;
-        cout << "dif: " << (sa_ans - task.GetOptimumPoint()) << endl;
-    }
-    file_ans << task_num << ';' << EnergyCalc(sa_ans) << ';' << task.GetOptimumValue() << ';' << dif << ';'
-             << sa_ans.toRawString() << ';' << true_ans.toRawString() << endl;
+    std::function<double(const MathVec<double>&)> EnergyCalc =
+        [&task](const MathVec<double>& x) { return task.ComputeFunction({ x.GetRawVector() }); };
 
-    return dif;
+    SA_CLASS sa(Kmax, lowBound, upperBound, EnergyCalc);
+    sa.setObserver(&log);
+    
+    // log
+    log.beginTask(task_num); // /! move inside onStart
+    
+    // start
+    MathVec<double> sa_ans = sa.run(Kmax);
+
+    return log.endTask(sa_ans, EnergyCalc(sa_ans),
+                       task.GetOptimumPoint(), task.GetOptimumValue());
 }
 
-
-// 268 - two min's
 int main() {
-    cout << KMAX << endl;
+    LoggerConfig cfg;
+    cfg.dir          = "./stats";
+    cfg.trace_steps  = !RUN_ALL_TASK;   // step-by-step only for a single task
+    cfg.trace_stride = 100;             // 1 = every iteration
+    cfg.echo_console = !RUN_ALL_TASK;
+    Log log(cfg);
 
-    std::ofstream file_ans;
-    file_ans.open("./stats/ans.txt");
-    file_ans << "  #  ;  SA_E  ;  OPT_E  ;  dif  ; SA_Point  ;  OPT_Point" << endl;
-    // all_task_run(KMAX, file_ans);
-    if (RUN_ALL_TASK) {
-        for (size_t i = 1; i < 100; i++){
-            task_run(i, KMAX, RUN_ALL_TASK, file_ans);   
-        }
-    }
-    else {
-        task_run(TASK_NUM, KMAX, RUN_ALL_TASK, file_ans);  
-    }
-
-    file_ans.close();
-    return 0;
+    if (RUN_ALL_TASK)
+        for (int i = 1; i < 100; ++i) task_run(i, KMAX, log);
+    else
+        task_run(TASK_NUM, KMAX, log);
 }
-

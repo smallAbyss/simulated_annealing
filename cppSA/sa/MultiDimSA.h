@@ -12,7 +12,7 @@ protected:
     std::function<double(const MathVec<double> x)> CalcEnergy;
     size_t DIM = 0;
     double ALPHA = 0.0;
-    const double T_end = 0.001;
+    const double T_end = 0.1;
     double T_0;
 
 public:
@@ -29,58 +29,39 @@ public:
         SetInitialState();
     }
 
-    virtual MathVec<double> run(unsigned k_max, const bool all_tasks_run) {
-        unsigned k = 0;
-        best_state = cur_state; // cur_state is zero vector here
-        //double temp = estimateInitialTemp(CalcEnergy, a[0], b[0], SAMPLES_NUM); //-- off bcs of a bug inside
-        T_0 = temp = 10.0;
-        ALPHA = pow(T_end / temp, 1.0 / k_max);
-        ALPHA = ALPHA_TEMP;
-        
-        cout << "ALPHA: " << ALPHA << endl;
-        std::ofstream delta_ans;
-        delta_ans.open("./stats/delta_ans.txt");
-        while (k <= k_max) {
-            temp *= ALPHA;
-            MathVec<double>new_state = GetNewNeighbour();
+    virtual MathVec<double> run(unsigned k_max) {
+    T_0 = temp = 10.0;
+    ALPHA = ALPHA_TEMP; 
+    // ALPHA = pow(T_end / T_0, 1.0 / k_max);
 
-            for (size_t i = 0; i < new_state.size(); ++i) {
-                // if (new_state[i] < leftBorder[i])
-                //     new_state[i] = leftBorder[i] + (leftBorder[i] - new_state[i]);
-                // if (new_state[i] > rightBorder[i])
-                //     new_state[i] = rightBorder[i] - (new_state[i] - rightBorder[i]);
-                new_state[i] = min(rightBorder[i], max(leftBorder[i], new_state[i]));
-            }
+    best_state = cur_state;
+    double e_cur  = CalcEnergy(cur_state);
+    double e_best = e_cur;
+    if (observer) observer->onStart(cur_state, e_cur, k_max);
 
-            double e_cur = CalcEnergy(cur_state);
-            double e_new = CalcEnergy(new_state);
-            double e_best = CalcEnergy(best_state);
+    for (unsigned k = 1; k <= k_max; ++k) {
+        temp *= ALPHA;
 
-            // stat stuff
-            double dE = e_cur - e_new;
-            double dET = (e_cur - e_new) / temp;
-            double Pexp = (exp((e_cur - e_new) / temp));
-            double ran = rnd();
-            bool tmp_ = Pexp > ran;
+        MathVec<double> cand = GetNewNeighbour();   // fold() already keeps it in the box
+        double e_cand = CalcEnergy(cand);
+        double dE     = e_cand - e_cur;
 
-            if (CalcEnergy(best_state) > CalcEnergy(new_state)) {
-                best_state = new_state;
-            }
-            
-            if ((e_cur > e_new) || exp((e_cur - e_new) / temp) > rnd() ){
-                cur_state = new_state;
-            }
+        bool accepted = (dE <= 0) || (std::exp(-dE / temp) > rnd());
+        bool new_best = e_cand < e_best;
 
-            k += 1;
-            
-            delta_ans << k << " " << CalcEnergy(best_state) << endl;
-        }
-        return (CalcEnergy(cur_state) > CalcEnergy(best_state) ? best_state : cur_state);
+        if (new_best) { best_state = cand; e_best = e_cand; }
+        if (accepted) { cur_state  = cand; e_cur  = e_cand; }
+
+        if (observer)
+            observer->onStep({k, temp, e_cur, e_cand, e_best, accepted, new_best, cur_state, cand});
     }
+    return best_state;
+}
     
     virtual MathVec<double> GetNewNeighbour() {
         double step_frac = 0.2 * sqrt(temp / T_0);
         MathVec<double>new_st(cur_state.size());
+    
         for (size_t i = 0; i < cur_state.size(); i++) {
             double w = rightBorder[i] - leftBorder[i];
             new_st[i] = cur_state[i] + (2 * rnd() - 1) * step_frac * w;
@@ -97,8 +78,7 @@ public:
         return l + (t <= w ? t : 2 * w - t);
     }
     
-    // just vec of 0, no border's
-    virtual MathVec<double> SetInitialState() { //! no borders
+    virtual MathVec<double> SetInitialState() {
         MathVec<double> init_state(DIM);
         for (size_t i = 0; i < DIM; i++)
             init_state[i] = leftBorder[i] + rnd() * (rightBorder[i] - leftBorder[i]);
@@ -137,8 +117,8 @@ private:
         return false;
     }
 
-    // можно притвориться умным и сохранять последние sample точек
-    // только это никакого объяснения кроме костыля для не-потери вот эти точек не имеет
+    // we could save the best sample point / points
+    // but thats dumb..
     virtual double estimateInitialTemp(const int samples) {
         MathVec<double> x = SetInitialState();
         double sum = 0;
