@@ -25,7 +25,7 @@ def parse_point(text) -> np.ndarray:
 def point_distance(sa: np.ndarray, opt: np.ndarray, norm: str) -> float:
     if sa.size == 0 or sa.shape != opt.shape:
         return float("nan")
-    d = np.abs(sa - opt)
+    d = np.abs(np.abs(sa) - np.abs(opt))
     if norm == "l1":
         return float(d.sum())
     if norm == "l2":
