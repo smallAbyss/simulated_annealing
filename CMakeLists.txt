@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 project(${PROJECT_NAME_STR})
 
 set(LIBS ${CMAKE_CURRENT_SOURCE_DIR}/src/libs)
+set(cppPlot ${CMAKE_CURRENT_SOURCE_DIR}/src/app/cppPlot)
 set(cppSA  ${CMAKE_CURRENT_SOURCE_DIR}/src/app/cppSA)
 
 
@@ -51,8 +52,13 @@ file(GLOB LOGGER_SRC
     ${LIBS}/Logger
 )
 
+file(GLOB PLOT_SRC
+    ${cppPlot}/*
+)
+
 find_package(OpenMP REQUIRED)
 
 add_executable(${PROJECT_NAME_STR} ${GCGen_SRC} ${SA_SRC} ${LOGGER_SRC})
+add_executable(grid ${GCGen_SRC} ${PLOT_SRC})
 
 target_link_libraries(${PROJECT_NAME_STR} PRIVATE OpenMP::OpenMP_CXX)
