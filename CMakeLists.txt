@@ -10,14 +10,16 @@ project(${PROJECT_NAME_STR})
 set(LIBS ${CMAKE_CURRENT_SOURCE_DIR}/src/libs)
 set(cppPlot ${CMAKE_CURRENT_SOURCE_DIR}/src/app/cppPlot)
 set(cppSA  ${CMAKE_CURRENT_SOURCE_DIR}/src/app/cppSA)
+set(THIRD ${CMAKE_CURRENT_SOURCE_DIR}/third-party)
 
 
 include_directories(
     ${LIBS}/GCGen/src
     ${LIBS}/GCGen/sample_src
     ${LIBS}/Logger
-    ${cppSA}
+    ${cppSA}/
     ${cppSA}/sa
+    ${THIRD}/
 )
 
 
@@ -56,9 +58,14 @@ file(GLOB PLOT_SRC
     ${cppPlot}/*
 )
 
+file(GLOB THIRD_PARTY_SRC
+    ${THIRD}/*
+)
+
+
 find_package(OpenMP REQUIRED)
-
-add_executable(${PROJECT_NAME_STR} ${GCGen_SRC} ${SA_SRC} ${LOGGER_SRC})
-add_executable(grid ${GCGen_SRC} ${PLOT_SRC})
-
+add_executable(${PROJECT_NAME_STR} ${GCGen_SRC} ${SA_SRC} ${LOGGER_SRC} ${THIRD_PARTY_SRC})
 target_link_libraries(${PROJECT_NAME_STR} PRIVATE OpenMP::OpenMP_CXX)
+
+
+add_executable(grid ${GCGen_SRC} ${PLOT_SRC})

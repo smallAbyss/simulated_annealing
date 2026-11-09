@@ -6,6 +6,9 @@
 #include <fstream>
 #include <random>
 
+#include "cxxopts.hpp"
+
+#include "SA.h"
 #include "OMP_SA.h"
 #include "le_OMP_SA.h"
 
@@ -20,10 +23,12 @@ using namespace std;
 
 // # define SA_CLASS le_OMP_SA
 # define SA_CLASS MultiDimSA
-const int TASK_NUM = 52;
+int TASK_NUM = 52;
 
 const int DIM = 2;
-const bool RUN_ALL_TASK = false; 
+bool RUN_ALL_TASK = false; 
+
+    
 
 // const size_t STARTS_NUM = 1;
 // const int MAX_TASK_NUM = 100;
@@ -55,16 +60,52 @@ double task_run(int task_num, unsigned Kmax, Log& log) {
                        task.GetOptimumPoint(), task.GetOptimumValue());
 }
 
-int main() {
+int main(int argc, char** argv) {
+
+    // KMAX = 0; // значение по умолчанию
+    // RUN_ALL_TASK = false;
+    // ALPHA_TEMP = 1.0;
+    
+    try {
+        cxxopts::Options options("SA", "Парсер аргументов");
+
+        options.add_options()
+            ("k,kmax", "Максимальное значение KMAX", cxxopts::value<unsigned>(KMAX))
+            ("t,task", "Task number", cxxopts::value<int>(TASK_NUM))
+            ("run-all", "Флаг RUN_ALL_TASK (включён, если указан)")
+            ("a,alpha", "Значение ALPHA_TEMP", cxxopts::value<double>(ALPHA_TEMP))
+            ("h,help", "Показать помощь");
+
+        auto result = options.parse(argc, argv);
+
+        if (result.count("help")) {
+            std::cout << options.help() << std::endl;
+            return 0;
+        }
+
+        // RUN_ALL_TASK - флаг: если опция присутствовала, ставим true
+        if (result.count("run-all")) {
+            RUN_ALL_TASK = true;
+        }
+
+        std::cout << "KMAX = " << KMAX << "\n"
+                  << "RUN_ALL_TASK = " << std::boolalpha << RUN_ALL_TASK << "\n"
+                  << "ALPHA_TEMP = " << ALPHA_TEMP << "\n\n";
+
+    } catch (const cxxopts::exceptions::exception& e) {
+        std::cerr << "Ошибка парсинга: " << e.what() << std::endl;
+        return 1;
+    }
+
     LoggerConfig cfg;
-    cfg.dir          = "./data/stats";
+    cfg.dir          = "./data/tmp_run";
     cfg.trace_steps  = !RUN_ALL_TASK;   // step-by-step only for a single task
     cfg.trace_stride = 100;             // 1 = every iteration
     cfg.echo_console = !RUN_ALL_TASK;
     Log log(cfg);
 
     if (RUN_ALL_TASK)
-        for (int i = 1; i < 100; ++i) task_run(i, KMAX, log);
+        for (int i = 1; i < 101; ++i) task_run(i, KMAX, log);
     else
         task_run(TASK_NUM, KMAX, log);
 }
