@@ -39,21 +39,25 @@ public:
     double e_best = e_cur;
     if (observer) observer->onStart(cur_state, e_cur, k_max);
 
+    // main loop
     for (unsigned k = 1; k <= k_max; ++k) {
+        // change temp
         temp *= ALPHA;
 
+        // new-neighbour 
         MathVec<double> cand = GetNewNeighbour();   // fold() already keeps it in the box
         double e_cand = CalcEnergy(cand);
         double dE     = e_cand - e_cur;
 
-        bool accepted = (dE <= 0) || (std::exp(-dE / temp) > rnd());
-        bool new_best = e_cand < e_best;
+        // update state
+        bool is_accepted = (dE <= 0) || (std::exp(-dE / temp) > rnd()); 
+        bool is_new_best = e_cand < e_best;
 
-        if (new_best) { best_state = cand; e_best = e_cand; }
-        if (accepted) { cur_state  = cand; e_cur  = e_cand; }
+        if (is_new_best) { best_state = cand; e_best = e_cand; }
+        if (is_accepted) { cur_state  = cand; e_cur  = e_cand; }
 
         if (observer)
-            observer->onStep({k, temp, e_cur, e_cand, e_best, accepted, new_best, cur_state, cand});
+            observer->onStep({k, temp, e_cur, e_cand, e_best, is_accepted, is_new_best, cur_state, cand});
     }
     return best_state;
 }
