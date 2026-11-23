@@ -12,7 +12,7 @@ protected:
     std::function<double(const MathVec<double> x)> CalcEnergy;
     size_t DIM = 0;
     double ALPHA = 0.0;
-    const double T_end = 0.1;
+    const double T_end = 0.001;
     double T_0;
 
 public:
@@ -30,9 +30,9 @@ public:
     }
 
     virtual MathVec<double> run(unsigned k_max) {
-    T_0 = temp = 10.0;
+    T_0 = temp = 5.0;
     ALPHA = ALPHA_TEMP; 
-    // ALPHA = pow(T_end / T_0, 1.0 / k_max);
+    ALPHA = pow(T_end / T_0, 1.0 / k_max);
 
     best_state = cur_state;
     double e_cur  = CalcEnergy(cur_state);
