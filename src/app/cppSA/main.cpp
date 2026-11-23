@@ -28,9 +28,10 @@ int TASK_NUM = 52;
 const int DIM = 2;
 bool RUN_ALL_TASK = false; 
 
+
     
 
-// const size_t STARTS_NUM = 1;
+const size_t STARTS_NUM = 10;
 // const int MAX_TASK_NUM = 100;
 
 using Log = Logger<MathVec<double>>;
@@ -99,13 +100,22 @@ int main(int argc, char** argv) {
 
     LoggerConfig cfg;
     cfg.dir          = "./data/tmp_run";
-    cfg.trace_steps  = !RUN_ALL_TASK;   // step-by-step only for a single task
-    cfg.trace_stride = 100;             // 1 = every iteration
+    cfg.trace_steps  = true; //!RUN_ALL_TASK;   // step-by-step only for a single task
+    cfg.trace_stride = 10000;             // 1 = every iteration
     cfg.echo_console = !RUN_ALL_TASK;
     Log log(cfg);
 
     if (RUN_ALL_TASK)
-        for (int i = 1; i < 101; ++i) task_run(i, KMAX, log);
-    else
-        task_run(TASK_NUM, KMAX, log);
+        for (int i = 1; i < 101; ++i) {
+            double dif = 12;    
+            for (int j = 0; j < STARTS_NUM; ++j) {
+                double dif_tmp = task_run(i, KMAX, log);
+                dif = dif < dif_tmp ? dif : dif_tmp;
+            }
+            // cout << "\nBest dif: " << dif << endl;
+        }
+    else {
+        for (int i = 0; i < STARTS_NUM; i++)
+            task_run(TASK_NUM, KMAX, log);
+    }
 }
